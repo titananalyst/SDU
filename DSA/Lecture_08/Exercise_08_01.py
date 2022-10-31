@@ -88,11 +88,12 @@ class UnsortedTableMap(MapBase):
 
 
 test = UnsortedTableMap()
-test.__setitem__('Car', 'Toyota')
-test.__setitem__('HP', 180)
 
-print(test.__getitem__('Car'))
-print(test.__getitem__('HP'))
+test['Car'] = 'Toyota'
+test['HP'] =  180
+
+print(test['Car'])
+print(test['HP'])
 
 print(test.items())
 print(test.items_compr())
