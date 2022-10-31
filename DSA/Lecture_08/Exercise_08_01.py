@@ -53,7 +53,7 @@ class UnsortedTableMap(MapBase):
         for item in self._table:
             if k == item._key: # Found a match:
                 item._value = v # reassign value
-        return # and quit
+                return # and quit
         # did not find match for key
         self._table.append(self._Item(k,v))
 
@@ -62,7 +62,7 @@ class UnsortedTableMap(MapBase):
         for j in range(len(self._table)):
             if k == self._table[j]._key: # Found a match:
                 self._table.pop(j) # remove item
-        return # and quit
+                return # and quit
         raise KeyError('Key Error:' + repr(k))
 
     def __len__(self):
@@ -73,3 +73,26 @@ class UnsortedTableMap(MapBase):
         """Generate iteration of the map's keys."""
         for item in self._table:
             yield item._key
+
+    def items(self):
+        """standard approach to iterate over"""
+        temp = []
+        for item in self._table:
+            temp.append((item._key, item._value))
+        return temp
+    
+    def items_compr(self):
+        """List comprehension"""
+        temp = [(i._key, i._value) for i in self._table]
+        return temp
+
+
+test = UnsortedTableMap()
+test.__setitem__('Car', 'Toyota')
+test.__setitem__('HP', 180)
+
+print(test.__getitem__('Car'))
+print(test.__getitem__('HP'))
+
+print(test.items())
+print(test.items_compr())
