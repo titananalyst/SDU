@@ -167,3 +167,4 @@ class _BlitManager:
           cv.blit(fig.bbox)
       # let the GUI event loop process anything it has to do
       cv.flush_events()
+

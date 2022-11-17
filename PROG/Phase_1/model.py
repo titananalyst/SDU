@@ -11,6 +11,11 @@ Notes
 This module provided as material for Phase 1 of the exam project for DM562, DM857, DS830 (2022). 
 """
 
+# Version 1.1
+# Changes and bugfixes
+# - Patch renders its coordinates in the wrong order (Patch.__repr__)
+# - Divide is missing a precondition (Cell.divide)
+
 from __future__ import annotations # to use a class in type hints of its members
 from typing import Optional
 
@@ -59,7 +64,7 @@ class Patch:
 
   def __repr__(self:Patch)->str:
     """Returns a string representation of this patch."""
-    return f"Patch({self.col()}, {self.row()})"
+    return f"Patch({self.row()}, {self.col()})"
 
 class Cell:
   """Represents a cell in the simulation."""
@@ -119,7 +124,7 @@ class Cell:
   def divide(self:Cell,patch:Patch)->Cell:
     """Divides this cell using the given patch and returns the new cell.
     
-    Precondition: the cell is alive."""
+    Precondition: the cell is alive, the patch is free."""
     assert self.is_alive(), "the cell must be alive."
     self._last_division = 0 # reset the counter from the last division
     self._divisions = self._divisions + 1 # updates the division count
