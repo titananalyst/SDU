@@ -19,11 +19,11 @@ from random import randint
 
 class Grid():
     def __init__(self):
-        self.row = 3
-        self.col = 3
+        self.row = 15
+        self.col = 25
         self.list_patches = []
         self.list_cells = []
-        self.init_pop = 1
+        self.init_pop = 2
 
     def start(self):
         '''
@@ -37,8 +37,8 @@ class Grid():
             raise ValueError("Try again and enter a initial population equal or lower than", (self.row * self.col))
             
         while len(self.list_cells) < self.init_pop:
-            # patch = randint(0, len(self.list_patches)-1)
-            patch = 0
+            patch = randint(0, len(self.list_patches)-1)
+            # patch = 4
             # print(patch)
             if self.list_patches[patch].has_cell() == False:
                 self.list_cells.append(Cell(self.list_patches[patch]))
@@ -51,48 +51,30 @@ class Grid():
         '''
         neighbors = []
         for i in self.list_patches:
-            # upper left patch
-            if i.row() == curr_cell.patch().row() - 1:
-                if i.col() == curr_cell.patch().col() - 1:
-                    neighbors.append(i)
-                elif i.col() == curr_cell.patch().col() + (self.col - 1):
-                    neighbors.append(i)
-            elif i.row() == curr_cell.patch().row() + (self.row - 1):
-                if i.col() == curr_cell.patch().col() - 1:
-                    neighbors.append(i)
-                elif i.col() == curr_cell.patch().col() + (self.col - 1):
-                    neighbors.append(i)
-                
-            # upper middle patch
-            if i.row() == curr_cell.patch().row() - 1:
+            # all upper patches
+            if i.row() == (curr_cell.patch().row() - 1) % self.row:
                 if i.col() == curr_cell.patch().col():
                     neighbors.append(i)
-                     
-            elif i.row() == curr_cell.patch().row() + (self.row - 1):
+                if i.col() == (curr_cell.patch().col() - 1) % self.col:
+                    neighbors.append(i)
+                if i.col() == (curr_cell.patch().col() + 1) % self.col:
+                    neighbors.append(i)
+
+            # middle left and right patch
+            if i.row() == curr_cell.patch().row():
+                if i.col() == (curr_cell.patch().col() - 1) % self.col:
+                    neighbors.append(i)
+                if i.col() == (curr_cell.patch().col() + 1) % self.col:
+                    neighbors.append(i)
+
+            # all the lower patches
+            if i.row() == (curr_cell.patch().row() + 1) % self.row:
                 if i.col() == curr_cell.patch().col():
                     neighbors.append(i)
-
-            # upper right patch
-            if i.row() == curr_cell.patch().row() - 1:
-                if i.col() == curr_cell.patch().col() + 1:
-                    print("test1")
+                if i.col() == (curr_cell.patch().col() - 1) % self.col:
                     neighbors.append(i)
-                elif i.col() == curr_cell.patch().col() - (self.col - 1):
-                    print("test2")
+                if i.col() == (curr_cell.patch().col() + 1) % self.col:
                     neighbors.append(i)
-            elif i.row() == curr_cell.patch().row() + (self.row - 1):
-                if i.col() == curr_cell.patch().col() + 1:
-                    print("test3")
-                    neighbors.append(i)
-                elif i.col() == curr_cell.patch().col() - (self.col - 1):
-                    print("test4")
-                    neighbors.append(i)
-
-
-                
-                    
-
-
 
         print(neighbors)
         for i in neighbors:
@@ -117,12 +99,14 @@ class Simulation():
 
     def start(self):
         self.board.start()
-        self.board.find_neighbors(self.board.list_cells[0])
+        for i in self.board.list_cells:
+            self.board.find_neighbors(i)
+        #self.board.find_neighbors(self.board.list_cells[0])
         self.board.show()
 
 
 
-    # no funciton so far, but is used to make a while loop over the given ticks
+    # used to make a while loop over the given ticks
 
 # test = Grid()
 # test.start()
