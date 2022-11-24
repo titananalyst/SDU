@@ -26,8 +26,8 @@ class Grid():
         self.list_patches = []
         self.list_cells = []
         self.init_pop = 2
-        self.prob = 0.2
-        self.age_limit = 10
+        self.prob = 1
+        self.age_lim = 3
         
 
     def start(self):
@@ -137,14 +137,13 @@ class Simulation():
                             choice_neighbor = choice(neighbor_list)
                             print(choice_neighbor) # debugging
                             temp.append(i.divide(choice_neighbor))
-                            sleep(2)
-                            vis.update()                    
+                                               
                         else:
                             continue
                     else:
                         continue
-
-            
+            # sleep(2)
+            vis.update() 
             ticks += 1
             self.board.list_cells.extend(temp) # append new cells to the list
             # print(self.board.list_cells)
