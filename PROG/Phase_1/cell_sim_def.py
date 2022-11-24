@@ -15,7 +15,9 @@
 
 from model import Patch, Cell
 from visualiser import Visualiser
-from random import randint
+import random
+from random import randint, choice
+from time import sleep
 
 class Grid():
     def __init__(self):
@@ -24,6 +26,9 @@ class Grid():
         self.list_patches = []
         self.list_cells = []
         self.init_pop = 2
+        self.prob = 0.2
+        self.age_limit = 5
+        
 
     def start(self):
         '''
@@ -75,23 +80,26 @@ class Grid():
                     neighbors.append(i)
                 if i.col() == (curr_cell.patch().col() + 1) % self.col:
                     neighbors.append(i)
+        
+        # print(neighbors)
+        # for i in neighbors:
+        #     print(i, i.row(), i.col())
 
-        print(neighbors)
-        for i in neighbors:
-            print(i, i.row(), i.col())
+        return neighbors
 
 
 
-    def evolution(self):
-        for row in range(self.row):
-            for col in range(self.col):
-                pass
 
+    # def evolution(self):
+    #     for i in self.list_cells:
+    #         neighbors = find_neighbors(i)
 
 
     def show(self):
         vis = Visualiser(self.list_patches, self.row, self.col, grid_lines=True) # create a visualiser for this data
         vis.wait_close() # wait until the window is closed by the user
+
+
 
 class Simulation():
     def __init__(self):
@@ -99,10 +107,43 @@ class Simulation():
 
     def start(self):
         self.board.start()
-        for i in self.board.list_cells:
-            self.board.find_neighbors(i)
-        #self.board.find_neighbors(self.board.list_cells[0])
-        self.board.show()
+        ticks = 0
+        vis = Visualiser(self.board.list_patches, self.board.row, self.board.col, grid_lines= True)
+        
+        while ticks < 100:
+          
+            temp = []
+            for i in self.board.list_cells:
+                i.tick()
+                print(i.age())
+                if i.age() > self.board.age_limit:
+                    i.die()
+                else:
+                    prob = random.random()
+                    # print(prob)
+                    if prob <= self.board.prob:
+                        # print(prob)
+                        temp_neighbor = self.board.find_neighbors(i)
+                        neighbor_list = []
+                        for j in temp_neighbor:
+                            if not j.has_cell():
+                                neighbor_list.append(j)
+
+                        if neighbor_list != []:
+                            choice_neighbor = choice(neighbor_list)
+                            # print(choice_neighbor) # debugging
+                            temp.append(i.divide(choice_neighbor))
+                            sleep(4)
+                            vis.update()                                        
+                        else:
+                            continue
+            else:
+                continue
+            ticks += 1
+            self.board.list_cells.extend(temp) # append new cells to the list
+            # print(self.board.list_cells)
+        vis.wait_close()
+        # self.board.show()
 
 
 
