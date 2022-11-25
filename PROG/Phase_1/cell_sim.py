@@ -104,23 +104,28 @@ class Grid():
 
 
 
-class Simulation():
+class Simulation(Grid):
     def __init__(self):
+        super().__init__()
         self.board = Grid()
+        # self.board.start()
         self.max_ticks = 100
         self.tot_cells = 0
         self.tot_deaths = 0
         self.age_limit = 0
         self.div_limit = 0
         self.overcrowding = 0
-        self.visualisation = False
+        self.visualisation = True
 
+    # def max_ticks(self, number):
+    #     self.max_ticks = number
+        
     def start(self):
         self.board.start()
         ticks = 0
         if self.visualisation == True:
             vis = Visualiser(self.board.list_patches, self.board.row, self.board.col, grid_lines= True)
-        while ticks < self.max_ticks:
+        while ticks < self.max_ticks and len(self.board.list_cells) > 0:
         
             
             temp = []
@@ -202,10 +207,19 @@ class Simulation():
             # print(self.board.list_cells)
         self.tot_cells = self.tot_cells + self.board.init_pop
         self.tot_deaths = self.age_limit + self.div_limit + self.overcrowding
+
+        # reset lists to avoid being filled when program is in while True loop
+        # FIXME: not working properly
+        self.reset_board()
+        
         self.statistics()
         if self.visualisation == True:    
             vis.wait_close()
         # self.board.show()
+
+    def reset_board(self):
+        self.board.list_patches = []
+        self.board.list_cells = []
 
     def statistics(self):
         print("Statistics")
@@ -216,6 +230,7 @@ class Simulation():
         print('   - Age limit {:>12}'.format(self.age_limit))
         print('   - Division limit {:>7}'.format(self.div_limit))
         print('   - Overcrowding {:>9}'.format(self.overcrowding))
+        print('\n')
 
 
 
@@ -226,5 +241,9 @@ class Simulation():
 # test.start()
 # test.show()
 
-S = Simulation()
-S.start()
+# S = Simulation()
+# S.start()
+
+if __name__ == "__main__":
+    Grid()
+    Simulation()
