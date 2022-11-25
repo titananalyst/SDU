@@ -15,45 +15,216 @@
 
 from model import Patch, Cell
 from visualiser import Visualiser
-from random import randint
+import random
+from random import randint, choice
+from time import sleep
 
-# menu achieved through while loop menu
-# report could be written with overleaf (latex)
+class Grid():
+    def __init__(self):
+        self.row = 15
+        self.col = 20
+        self.list_patches = []
+        self.list_cells = []
+        self.init_pop = 2
+        self.prob = 0.2
+        self.age_lim = 10
+        self.div_lim = 2
+        self.cooldown = 2
 
-def create_grid(row, col):
-    grid = [[None] * row for i in range(col)]
-    print(grid)
-    #for i in range(row):
-        #for j in range(col):
-    grid = [Patch(i, j) for i in range(row) for j in range(col)]
-    return grid
+        
 
-#print(create_grid(3,3))
-
-grid = [[0, 1, 0], # some 2D binary data
-[0, 0, 1],
-[1, 1, 1]]
-
-
-from model import Patch, Cell
-from visualiser import Visualiser
-row = 15
-col = 15
-initial_population = 2
-
-# the process behind creating patches and applying them to the cells 
-# so we have like a boolean true value for living cells for the grid
-# the patches are unsorted yet
-list_patches = [Patch(i, j) for i in range(row) for j in range(col)]  # creating patches with coordinates from index row and col
-#list_cells = [Cell(list_patches[i]) for i in range(len(list_patches)) if i % 2 == 0]  # creating cells attached with the patches
-list_cells = [Cell(list_patches[randint(0, len(list_patches))]) for i in range(initial_population)]
-print([list_cells[i].patch() for i in range(len(list_cells))])  # printing the patches attached to the cells
-for i in range(len(list_cells)):
-    print(list_cells[i].patch().row(), ",", list_cells[i].patch().col())
-
-#print(list_cells[i].patch().row() for i in range(len(list_cells)))
+    def start(self):
+        '''
+        This method initializes the patches and randomly sets the initial population
+        of cells on the grid. 
+        '''
+        self.list_patches = [Patch(i, j) for i in range(self.row) for j in range(self.col)]  # creating patches with coordinates from index row and col
+        # self.list_cells = [Cell(self.list_patches[randint(0, len(self.list_patches))]) for i in range(self.init_pop)]
+        # print(len(self.list_patches))
+        if self.init_pop > (self.row * self.col):
+            raise ValueError("Try again and enter a initial population equal or lower than", (self.row * self.col))
+            
+        while len(self.list_cells) < self.init_pop:
+            patch = randint(0, len(self.list_patches)-1)
+            # patch = 4
+            # print(patch)
+            if self.list_patches[patch].has_cell() == False:
+                self.list_cells.append(Cell(self.list_patches[patch]))
 
 
+    def find_neighbors(self, curr_cell):
+        '''
+        This method searches the neighbors arround a cell in a 
+        3x3 block.
+        '''
+        neighbors = []
+        for i in self.list_patches:
+            # all upper patches
+            if i.row() == (curr_cell.patch().row() - 1) % self.row:
+                if i.col() == curr_cell.patch().col():
+                    neighbors.append(i)
+                if i.col() == (curr_cell.patch().col() - 1) % self.col:
+                    neighbors.append(i)
+                if i.col() == (curr_cell.patch().col() + 1) % self.col:
+                    neighbors.append(i)
 
-vis = Visualiser(list_patches, row, col, grid_lines=True) # create a visualiser for this data
-vis.wait_close() # wait until the window is closed by the user
+            # middle left and right patch
+            if i.row() == curr_cell.patch().row():
+                if i.col() == (curr_cell.patch().col() - 1) % self.col:
+                    neighbors.append(i)
+                if i.col() == (curr_cell.patch().col() + 1) % self.col:
+                    neighbors.append(i)
+
+            # all the lower patches
+            if i.row() == (curr_cell.patch().row() + 1) % self.row:
+                if i.col() == curr_cell.patch().col():
+                    neighbors.append(i)
+                if i.col() == (curr_cell.patch().col() - 1) % self.col:
+                    neighbors.append(i)
+                if i.col() == (curr_cell.patch().col() + 1) % self.col:
+                    neighbors.append(i)
+        
+        # print(neighbors)
+        # for i in neighbors:
+        #     print(i, i.row(), i.col())
+
+        return neighbors
+
+
+
+
+    # def evolution(self):
+    #     for i in self.list_cells:
+    #         neighbors = find_neighbors(i)
+
+
+    def show(self):
+        vis = Visualiser(self.list_patches, self.row, self.col, grid_lines=True) # create a visualiser for this data
+        vis.wait_close() # wait until the window is closed by the user
+
+
+
+class Simulation():
+    def __init__(self):
+        self.board = Grid()
+        self.max_ticks = 100
+        self.tot_cells = 0
+        self.tot_deaths = 0
+        self.age_limit = 0
+        self.div_limit = 0
+        self.overcrowding = 0
+        self.visualisation = False
+
+    def start(self):
+        self.board.start()
+        ticks = 0
+        if self.visualisation == True:
+            vis = Visualiser(self.board.list_patches, self.board.row, self.board.col, grid_lines= True)
+        while ticks < self.max_ticks:
+        
+            
+            temp = []
+            print('\n' + 20 * '-')
+            print("Iteration", ticks)
+            print(20 * '-', '\n')
+            for i in self.board.list_cells:
+                i.tick()
+                print('age:', i.age(), 'div:', i.divisions(), 'cd:', i.last_division())
+                # print(i.age())
+                if i.divisions() == self.board.div_lim:
+                    i.die()
+                    self.board.list_cells.remove(i)
+                    self.div_limit += 1
+                    print("died from division limit")
+                else:
+                    if i.age() >= self.board.age_lim:
+                        # print(self.board.list_cells)
+                        i.die()
+                        self.board.list_cells.remove(i)
+                        self.age_limit += 1
+                        # print(self.board.list_cells)
+                    if i.age() < self.board.age_lim:
+                        prob = round(random.random(), 2)
+                        # print(prob)
+                        if prob <= self.board.prob:
+                            print("++++++++++++ good prob", prob, "<=", self.board.prob)
+                            # print(prob)
+                            temp_neighbor = self.board.find_neighbors(i)
+                            neighbor_list = []
+                            for j in temp_neighbor:
+                                if not j.has_cell():
+                                    neighbor_list.append(j)
+                            
+                            # overcrowding
+                            if neighbor_list == []:
+                                print("die of overcrowding")
+                                age = [i.cell().age() for i in temp_neighbor]
+                                max_age = max(age)
+                                print("age:", age)
+                                print("max_age:", max_age)
+                                elder_list = [i for i in temp_neighbor if i.cell().age() == max_age]
+                                print("list:", elder_list)
+                                rand_elder = choice(elder_list)
+                                rand_elder_cell = rand_elder.cell()
+                                print("rand_elder:", rand_elder)
+                                print("rand_elder_cell:", rand_elder_cell)
+                                rand_elder_cell.die()
+                                self.board.list_cells.remove(rand_elder_cell)
+                                self.overcrowding += 1
+                                # sleep(0.5)
+                                # vis.update()
+
+                            if neighbor_list != []:
+                                if i.last_division() >= self.board.cooldown:
+                                    print("cooldown good:", i.last_division())
+                                    # print("Last division:", i.last_division())
+                                    choice_neighbor = choice(neighbor_list)
+                                    # print(choice_neighbor) # debugging
+                                    temp.append(i.divide(choice_neighbor))
+                                    self.tot_cells += 1
+                                    print("new cell")
+                                    # sleep(0.5)
+                                    # vis.update()
+                                else:
+                                    print("cooldown not good:", i.last_division())
+                                    continue
+                            
+                            else:
+                                continue
+                        else:
+                            print("------------ bad prob:", prob, ">", self.board.prob)
+                            continue
+            #sleep(2)
+            if self.visualisation == True:
+                vis.update()
+            ticks += 1
+            self.board.list_cells.extend(temp) # append new cells to the list
+            # print(self.board.list_cells)
+        self.tot_cells = self.tot_cells + self.board.init_pop
+        self.tot_deaths = self.age_limit + self.div_limit + self.overcrowding
+        self.statistics()
+        if self.visualisation == True:    
+            vis.wait_close()
+        # self.board.show()
+
+    def statistics(self):
+        print("Statistics")
+        print(' - Duration (ticks) {:>7}'.format(self.max_ticks))
+        print(' - Total cells {:>12}'.format(self.tot_cells))
+        print(' - Total deaths {:>11}'.format(self.tot_deaths))
+        print(' - Cause of death')
+        print('   - Age limit {:>12}'.format(self.age_limit))
+        print('   - Division limit {:>7}'.format(self.div_limit))
+        print('   - Overcrowding {:>9}'.format(self.overcrowding))
+
+
+
+
+
+
+# test = Grid()
+# test.start()
+# test.show()
+
+S = Simulation()
+S.start()
