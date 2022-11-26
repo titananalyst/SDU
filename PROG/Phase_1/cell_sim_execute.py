@@ -6,11 +6,6 @@
 @Author  :   Simone Wolff Nielsen
 @Author  :   Mia Trabjerglund
 @Author  :   Jonas Keller
-@Version :   1.0
-@ContactSDU  :   jokel22@sutdent.sdu.dk
-@ContactZHAW :   kellejo6@students.zhaw.ch
-@License :   (C)Copyright 2022-2023, Jonas Keller
-@Desc    :   None
 '''
 
 from cell_sim import Grid, Simulation
