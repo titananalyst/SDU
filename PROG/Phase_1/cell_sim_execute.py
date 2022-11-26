@@ -17,6 +17,8 @@ from cell_sim import Grid, Simulation
 from time import sleep
 
 def print_menu():
+    print("\nMenu:")
+    print(31 * "-")
     print("1: Display configuration")
     print("2: Quick setup")
     print("3: Advanced setup")
@@ -50,6 +52,7 @@ while True:
             print("{:<22} {}".format("Division cooldown", sim.board.cooldown))
             print("{:<22} {}".format("Time limit", sim.max_ticks))
             print("{:<22} {}\n".format("Visualisation", vis_status))
+            print_menu()
 
 
         elif menu_choice == 2:
@@ -58,7 +61,7 @@ while True:
             if not row_input < 3:
                 sim.board.row = row_input
             else:
-                print("Please enter a integer above 2")
+                print("\nPlease enter a integer above 2")
                 print("Try again!\n")
                 continue
 
@@ -66,25 +69,26 @@ while True:
             if not col_input < 3:
                 sim.board.col = col_input
             else:
-                print("Please enter a integer above 2")
+                print("\nPlease enter a integer above 2")
                 print("Try again!\n")
                 continue
 
-            pop_input = int(input("Enter the number of initial population (min 1): "))
-            if not pop_input < 1:
+            pop_input = int(input("Enter the number of initial population between 1 and " + str(sim.board.row*sim.board.col) + "): "))
+            if not pop_input < 1 and not pop_input > (sim.board.row*sim.board.col):
                 sim.board.init_pop = pop_input
             else:
-                print("Please enter a integer above 0")
+                print("\nPlease enter a integer above between 1 and " + str(sim.board.row*sim.board.col))
                 print("Try again!\n")
                 continue
-
+            
             sim.board.age_lim = 10
             sim.board.div_lim = 2
             sim.board.prob = 0.2
             sim.board.cooldown = 2
             sim.max_ticks = 100
             sim.visualisation = True
-            print("Changed to quick setup.\n")
+            print("Changed to quick setup.")
+            print_menu()
 
 
         
@@ -94,7 +98,7 @@ while True:
             if not row_input < 3:
                 sim.board.row = row_input
             else:
-                print("Please enter a integer above 2")
+                print("\nPlease enter a integer above 2")
                 print("Try again!\n")
                 continue
 
@@ -102,15 +106,15 @@ while True:
             if not col_input < 3:
                 sim.board.col = col_input
             else:
-                print("Please enter a integer above 2")
+                print("\nPlease enter a integer above 2")
                 print("Try again!\n")
                 continue
 
-            pop_input = int(input("Enter the number of initial population (min 1): "))
-            if not pop_input < 1:
+            pop_input = int(input("Enter the number of initial population between 1 and " + str(sim.board.row*sim.board.col) + "): "))
+            if not pop_input < 1 and not pop_input > (sim.board.row*sim.board.col):
                 sim.board.init_pop = pop_input
             else:
-                print("Please enter a integer above 0")
+                print("\nPlease enter a integer above between 1 and " + str(sim.board.row*sim.board.col))
                 print("Try again!\n")
                 continue
             
@@ -118,7 +122,7 @@ while True:
             if not age_input < 1:
                 sim.board.age_lim = age_input
             else:
-                print("Please enter a integer above 0")
+                print("\nPlease enter a integer above 0")
                 print("Try again!\n")
                 continue
 
@@ -126,15 +130,15 @@ while True:
             if not div_input < 1:
                 sim.board.div_lim = div_input
             else:
-                print("Please enter a integer above 0")
+                print("\nPlease enter a integer above 0")
                 print("Try again!\n")
                 continue
 
-            prob_input = float(input("Enter probability for a cell to divide (betwen 0 and 1): "))
+            prob_input = float(input("Enter probability for a cell to divide (between 0 and 1): "))
             if prob_input >= 0 and prob_input <= 1:
                 sim.board.prob = prob_input
             else:
-                print("Please enter a float between 0 and 1")
+                print("\nPlease enter a float between 0 and 1")
                 print("Try again!\n")
                 continue
 
@@ -142,15 +146,15 @@ while True:
             if not cooldown_input < 0:
                 sim.board.cooldown = cooldown_input
             else:
-                print("Please enter a non negative number")
+                print("\nPlease enter a non negative number")
                 print("Try again!\n")
                 continue
 
-            ticks_input = int(input("Enter number of ticks for the duration of the simulation (above 0): "))
-            if not ticks_input < 0:    
+            ticks_input = int(input("Enter number of ticks for the duration of the simulation (min 1): "))
+            if ticks_input >= 1:    
                 sim.max_ticks = ticks_input
             else:
-                print("Please enter a non negative number")
+                print("\nPlease enter a number above 0")
                 print("Try again!\n")
                 continue
 
@@ -160,10 +164,12 @@ while True:
             elif vis_input == 1:
                 sim.visualisation = True
             else:
-                print("Please chose between 0 and 1 [ENABLE | DISABLE")
-                print("Try again\n")
+                print("\nVisualisation configuration has not changed!")
+                print("Please chose between 1 and 0 [ENABLE | DISABLE]")
+                print("Try again!\n")
 
-            print("Changed to advanced setup.\n")
+            print("Changed to advanced setup.")
+            print_menu()
 
 
         elif menu_choice == 4:
@@ -182,11 +188,26 @@ while True:
             sim.board.cooldown = 2
             sim.max_ticks = 100
             sim.visualisation = True
+
             print("Settings reset to default settings.\n")
 
         
         elif menu_choice == 6:
             quit()
+        
+        elif menu_choice == 33:
+            sim.max_ticks = 25
+
+        elif menu_choice == 34:
+            vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
+            if vis_input == 0:
+                sim.visualisation = False
+            elif vis_input == 1:
+                sim.visualisation = True
+            else:
+                print("Please chose between 0 and 1 [ENABLE | DISABLE")
+                print("Try again\n")
+
 
 
         else:
@@ -194,6 +215,6 @@ while True:
 
 
     except ValueError:
-        print('\n--- fatal ERROR!--- | Try again and enter a valid number!\n')
+        print('\n--- fatal ERROR!--- | Try again and enter just integer numbers!\n')
         sleep(1)
         print_menu()
