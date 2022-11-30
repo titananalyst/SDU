@@ -12,10 +12,6 @@ from cell_sim import Grid, Simulation
 from time import sleep
 
 def print_menu():
-    '''
-    this print out the display of the menu, 
-    where all the print-statements exicute one line at a time. 
-    '''
     print("\nMenu:")
     print(31 * "-")
     print("1: Display configuration")
@@ -29,7 +25,7 @@ def print_menu():
 
 menu_choice = 0
 print_menu()
-grid = Grid() # sets grid to the whole class Grid from cell_sim
+grid = Grid()
 sim = Simulation()
 sim_status = "Default"
 while True:
@@ -39,10 +35,6 @@ while True:
         if menu_choice == 1:
             if sim.visualisation == False:
                 vis_status = "Disabled"
-            '''
-            this print out the display confuration menu, 
-            with the parametres there has been chosen.
-            '''
             print("\n" + 31 * "-")
             print("{:<22} {}".format("Parameter", sim_status))
             print(31 * "-")
@@ -59,17 +51,6 @@ while True:
 
 
         elif menu_choice == 2:
-            '''
-            this is a go through of the setting in Qick menu. 
-            exaple 1:
-            row_input is set to be an integere with the code int(). 
-            Inside int there is a code input() witch make the user avalible to make its own choice,
-            but that is restricted by the int().
-            That is why there is a messege inside the input() that the user will get. 
-            if the user select correctly the first if statement will be exicuted. 
-            inside that if there i a logical statement that checks if the user has made an valid choice.
-            if not the else statement will print and return the user to the menue.  
-            '''
             sim_status = "Quick"
             row_input = int(input("\n" + "Enter the number of rows (min 3): "))
             if not row_input < 3:
@@ -77,7 +58,6 @@ while True:
             else:
                 print("\nPlease enter a integer above 2")
                 print("Try again!\n")
-                print_menu()
                 continue
 
             col_input = int(input("Enter the number of columns (min 3): "))
@@ -86,16 +66,14 @@ while True:
             else:
                 print("\nPlease enter a integer above 2")
                 print("Try again!\n")
-                print_menu()
                 continue
 
-            pop_input = int(input("Enter the number of initial population between 1 and " + str(sim.board.row*sim.board.col) + ": "))
+            pop_input = int(input("Enter the number of initial population between 1 and " + str(sim.board.row*sim.board.col) + "): "))
             if not pop_input < 1 and not pop_input > (sim.board.row*sim.board.col):
                 sim.board.init_pop = pop_input
             else:
                 print("\nPlease enter a integer above between 1 and " + str(sim.board.row*sim.board.col))
                 print("Try again!\n")
-                print_menu()
                 continue
             
             sim.board.age_lim = 10
@@ -110,9 +88,6 @@ while True:
 
         
         elif menu_choice == 3:
-            '''
-            look at example 1 above. 
-            '''
             sim_status = "Advanced"
             row_input = int(input("\n" + "Enter the number of rows (min 3): "))
             if not row_input < 3:
@@ -120,7 +95,6 @@ while True:
             else:
                 print("\nPlease enter a integer above 2")
                 print("Try again!\n")
-                print_menu()
                 continue
 
             col_input = int(input("Enter the number of columns (min 3): "))
@@ -129,7 +103,6 @@ while True:
             else:
                 print("\nPlease enter a integer above 2")
                 print("Try again!\n")
-                print_menu()
                 continue
 
             pop_input = int(input("Enter the number of initial population between 1 and " + str(sim.board.row*sim.board.col) + "): "))
@@ -138,7 +111,6 @@ while True:
             else:
                 print("\nPlease enter a integer above between 1 and " + str(sim.board.row*sim.board.col))
                 print("Try again!\n")
-                print_menu()
                 continue
             
             age_input = int(input("Enter a age limit for a cell (min 1): "))
@@ -147,7 +119,6 @@ while True:
             else:
                 print("\nPlease enter a integer above 0")
                 print("Try again!\n")
-                print_menu()
                 continue
 
             div_input = int(input("Enter number of max divisions of a cell (min 1): "))
@@ -156,7 +127,6 @@ while True:
             else:
                 print("\nPlease enter a integer above 0")
                 print("Try again!\n")
-                print_menu()
                 continue
 
             prob_input = float(input("Enter probability for a cell to divide (between 0 and 1): "))
@@ -165,7 +135,6 @@ while True:
             else:
                 print("\nPlease enter a float between 0 and 1")
                 print("Try again!\n")
-                print_menu()
                 continue
 
             cooldown_input = int(input("Enter ticks of cooldown for one cell to divide (not negative): "))
@@ -174,7 +143,6 @@ while True:
             else:
                 print("\nPlease enter a non negative number")
                 print("Try again!\n")
-                print_menu()
                 continue
 
             ticks_input = int(input("Enter number of ticks for the duration of the simulation (min 1): "))
@@ -183,7 +151,6 @@ while True:
             else:
                 print("\nPlease enter a number above 0")
                 print("Try again!\n")
-                print_menu()
                 continue
 
             vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
@@ -195,24 +162,17 @@ while True:
                 print("\nVisualisation configuration has not changed!")
                 print("Please chose between 1 and 0 [ENABLE | DISABLE]")
                 print("Try again!\n")
-                
 
             print("Changed to advanced setup.")
             print_menu()
 
 
         elif menu_choice == 4:
-            '''
-            this starts the simulation that has been called from the cell_sim.py
-            '''
             sim.start()
             print_menu()
 
         
         elif menu_choice == 5:
-            '''
-            this reset alle tha parametres to the pre-chosen default values.
-            '''
             sim_status = "Default"
             sim.board.row = 15
             sim.board.col = 20
@@ -228,9 +188,6 @@ while True:
 
         
         elif menu_choice == 6:
-            '''
-            quit the program with the imported quit function. 
-            '''
             quit()
         
         elif menu_choice == 33:

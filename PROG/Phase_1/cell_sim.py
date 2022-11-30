@@ -302,7 +302,7 @@ class Simulation(Grid):
         self.statistics()
         self.reset_stats()
         if self.visualisation == True: 
-            print("Simulation finished, please close the window in other to do call the menu.")
+            print("Simulation finished, please close the window in order to do call the menu.")
             vis.wait_close()
 
     def reset_board(self):
