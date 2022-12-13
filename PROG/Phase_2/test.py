@@ -49,50 +49,53 @@ class Grid():
             # print(patch)
             if self.list_patches[patch].has_cell() == False:
                 self.list_cells.append(Cell(self.list_patches[patch]))
+            print(self.list_cells)
+            
+            find_neighbors(self, self.list_cells[0])
 
-        
 
-    def find_neighbors(self, curr_cell):
-        '''
-        This method searches the neighbors arround a cell in a 
-        3x3 block. Returns a list of objects with the neighbors
-        patches.
-        
-        Keyword arguments:
-        curr_cell -- living cell which is attached to a patch
-        '''
-        neighbors = []
-        for i in self.list_patches:
-            # all upper patches
-            if i.row() == (curr_cell.patch().row() - 1) % self.row:
-                if i.col() == curr_cell.patch().col():
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() - 1) % self.col:
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() + 1) % self.col:
-                    neighbors.append(i)
 
-            # middle left and right patch
-            if i.row() == curr_cell.patch().row():
-                if i.col() == (curr_cell.patch().col() - 1) % self.col:
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() + 1) % self.col:
-                    neighbors.append(i)
+def find_neighbors(self, curr_cell):
+    '''
+    This method searches the neighbors arround a cell in a 
+    3x3 block. Returns a list of objects with the neighbors
+    patches.
+    
+    Keyword arguments:
+    curr_cell -- living cell which is attached to a patch
+    '''
+    neighbors = []
+    for i in self.list_patches:
+        # all upper patches
+        if i.row() == (curr_cell.patch().row() - 1) % self.row:
+            if i.col() == curr_cell.patch().col():
+                neighbors.append(i)
+            if i.col() == (curr_cell.patch().col() - 1) % self.col:
+                neighbors.append(i)
+            if i.col() == (curr_cell.patch().col() + 1) % self.col:
+                neighbors.append(i)
 
-            # all the lower patches
-            if i.row() == (curr_cell.patch().row() + 1) % self.row:
-                if i.col() == curr_cell.patch().col():
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() - 1) % self.col:
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() + 1) % self.col:
-                    neighbors.append(i)
-        
-        # print(neighbors)
-        # for i in neighbors:
-        #     print(i, i.row(), i.col())
+        # middle left and right patch
+        if i.row() == curr_cell.patch().row():
+            if i.col() == (curr_cell.patch().col() - 1) % self.col:
+                neighbors.append(i)
+            if i.col() == (curr_cell.patch().col() + 1) % self.col:
+                neighbors.append(i)
 
-        return neighbors
+        # all the lower patches
+        if i.row() == (curr_cell.patch().row() + 1) % self.row:
+            if i.col() == curr_cell.patch().col():
+                neighbors.append(i)
+            if i.col() == (curr_cell.patch().col() - 1) % self.col:
+                neighbors.append(i)
+            if i.col() == (curr_cell.patch().col() + 1) % self.col:
+                neighbors.append(i)
+    
+    # print(neighbors)
+    # for i in neighbors:
+    #     print(i, i.row(), i.col())
+    print(neighbors)
+    return neighbors
 
 
     # def evolution(self):
@@ -331,6 +334,9 @@ class Simulation(Grid):
         print('   - Overcrowding {:>9}'.format(self.overcrowding))
         print('\n')
         print('Statistics printed.')
+
+g = Grid()
+g.start()
 
 # S = Simulation()
 # S.start()

@@ -19,7 +19,25 @@ This module provided as material for Phase 1 of the exam project for DM562, DM85
 from __future__ import annotations # to use a class in type hints of its members
 from typing import Optional
 
-class Patch:
+class BasePatch:
+  def __init__(self:BasePatch, row:int, col:int):
+    self._col = col
+    self._row = row
+  
+  def col(self:BasePatch)->int:
+    """Returns the index of the column containing this patch."""
+  return self._col
+
+  def row(self:BasePatch)->int:
+    """Returns the index of the row containing this patch."""
+    return self._row
+
+    
+
+class ObstaclePatch:
+  pass
+
+class Patch(BasePatch):
   """Represents a 'patch' at the intersection of the riven row and column of the simulation grid."""
   
   def __init__(self:Patch,row:int,col:int):
@@ -29,8 +47,7 @@ class Patch:
     row, col: int
       The index of the row and column containing this patch.
     """
-    self._col = col
-    self._row = row
+
     self._cell : Optional[Cell] = None
 
   def col(self:Patch)->int:

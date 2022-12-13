@@ -7,3 +7,12 @@
 @Author  :   Mia Trabjerglund
 @Author  :   Jonas Keller
 '''
+import os
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
+data = open('grid_1.txt').read().split('\n')
+print(data)
+
