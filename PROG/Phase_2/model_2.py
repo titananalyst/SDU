@@ -20,26 +20,48 @@ from __future__ import annotations # to use a class in type hints of its members
 from typing import Optional
 
 class BasePatch:
+  def __init__(self:BasePatch, row:int, col:int):
+    self._col = col
+    self._row = row
+  
+  def col(self:BasePatch)->int:
+    """Returns the index of the column containing this patch."""
+    return self._col
+
+  def row(self:BasePatch)->int:
+    """Returns the index of the row containing this patch."""
+    return self._row
+
+
+class ObstaclePatch:
+  def __init__(self:ObstaclePatch):
+    self._is_obstacle = True
+
+  def obstacle_change(self):
+    self._is_obstacle = False
+
+
+class CellPatch(BasePatch):
   """Represents a 'patch' at the intersection of the riven row and column of the simulation grid."""
   
-  def __init__(self:BasePatch,row:int,col:int):
+  def __init__(self:CellPatch):
+    super().__init__()
     """    
     Parameters
     ----------
     row, col: int
       The index of the row and column containing this patch.
     """
-    self._col = col
-    self._row = row
+
     self._cell : Optional[Cell] = None
 
-  def col(self:Patch)->int:
-    """Returns the index of the column containing this patch."""
-    return self._col
+  # def col(self:Patch)->int:
+  #   """Returns the index of the column containing this patch."""
+  #   return self._col
 
-  def row(self:Patch)->int:
-    """Returns the index of the row containing this patch."""
-    return self._row
+  # def row(self:Patch)->int:
+  #   """Returns the index of the row containing this patch."""
+  #   return self._row
   
   def has_cell(self:Patch)->bool:
     """Checks if the patch holds a cell."""

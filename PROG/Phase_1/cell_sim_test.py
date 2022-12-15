@@ -2,17 +2,19 @@
 # -*-coding:utf-8 -*-
 '''
 @File    :   cell_sim.py
-@Time    :   2022/12/12 22:12:29
+@Time    :   2022/11/08 01:28:29
 @Author  :   Simone Wolff Nielsen
 @Author  :   Mia Trabjerglund
 @Author  :   Jonas Keller
 '''
-import os
+
 from model import Patch, Cell
 from visualiser import Visualiser
 import random
 from random import randint, choice
 from time import sleep
+
+import os
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -20,6 +22,7 @@ os.chdir(dname)
 
 data = open('grid_1.txt').read().split('\n')
 print(data)
+
 
 class Grid():
     '''
@@ -37,6 +40,20 @@ class Grid():
         self.div_lim = 2
         self.cooldown = 2
 
+
+    def start_grid(self):
+        self.list_patches = [Patch(i, j) for i in range(len(data)) for j in range(len(data[0]))]
+        print(type(self.list_patches[0]))
+
+        if self.init_pop > (len(data) * len(data[0])):
+            raise ValueError("Try again and enter a initial population equal or lower than", (self.row * self.col))
+            
+        while len(self.list_cells) < self.init_pop:
+            patch = randint(0, len(self.list_patches)-1)
+            # patch = 4
+            # print(patch)
+            if self.list_patches[patch].has_cell() == False:
+                self.list_cells.append(Cell(self.list_patches[patch]))
 
     def start(self):
         '''
@@ -132,7 +149,7 @@ class Simulation(Grid):
         Further explanation is written with one-line, or multi-line docstrings. 
         '''
         print('\nSimulation is running ...')
-        self.board.start()
+        self.board.start_grid()
         ticks = 0
         if self.visualisation == True:
             vis = Visualiser(self.board.list_patches, self.board.row, self.board.col, grid_lines= True)
