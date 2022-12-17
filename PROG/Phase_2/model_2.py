@@ -45,7 +45,8 @@ class ObstaclePatch:
     Precondition: the patch is a Obstacle patch"""
     assert self.is_obstacle(), "the patch must be a Obstacle patch"
     self._is_obstacle = False
-    TODO: "maybe implement the patch changin to CellPatch or BasePatch"
+    # TODO: maybe implement the patch changin to CellPatch or BasePatch
+    
 
   def is_obstacle(self):
     "Returns whether this is an obstacle patch."
@@ -65,19 +66,19 @@ class CellPatch(BasePatch):
 
     self._cell : Optional[Cell] = None
 
-  # def col(self:Patch)->int:
+  # def col(self:CellPatch)->int:
   #   """Returns the index of the column containing this patch."""
   #   return self._col
 
-  # def row(self:Patch)->int:
+  # def row(self:CellPatch)->int:
   #   """Returns the index of the row containing this patch."""
   #   return self._row
   
-  def has_cell(self:Patch)->bool:
+  def has_cell(self:CellPatch)->bool:
     """Checks if the patch holds a cell."""
     return self._cell is not None
 
-  def put_cell(self:Patch,cell:Cell)->None:
+  def put_cell(self:CellPatch,cell:Cell)->None:
     """Puts a cell on this patch.
     
     Preconditions: there is no cell on this patch and the cell is not on another patch
@@ -86,22 +87,22 @@ class CellPatch(BasePatch):
     assert cell.patch() is self, "The cell is on another patch."
     self._cell = cell
 
-  def remove_cell(self:Patch)->None:
+  def remove_cell(self:CellPatch)->None:
     """Removes any cell currently on this patch."""
     self._cell = None
 
-  def cell(self:Patch)->Optional[Cell]:
+  def cell(self:CellPatch)->Optional[Cell]:
     """Returns the cell currently on this patch, if any."""
     return self._cell
 
-  def __repr__(self:Patch)->str:
+  def __repr__(self:CellPatch)->str:
     """Returns a string representation of this patch."""
     return f"Patch({self.row()}, {self.col()})"
 
 class Cell:
   """Represents a cell in the simulation."""
 
-  def __init__(self:Cell,patch:Patch):
+  def __init__(self:Cell,patch:CellPatch):
     """    
     Parameters
     ----------
@@ -116,7 +117,7 @@ class Cell:
     # inform patch that this cell is on it
     patch.put_cell(self)
   
-  def patch(self:Cell)->Patch:
+  def patch(self:Cell)->CellPatch:
     """Returns the patch of this cell. If the cell is dead, it returns the patch where the cell died."""
     return self._patch
 
@@ -153,7 +154,7 @@ class Cell:
     # removes the cell from this cell's patch
     self._patch.remove_cell()
   
-  def divide(self:Cell,patch:Patch)->Cell:
+  def divide(self:Cell,patch:CellPatch)->Cell:
     """Divides this cell using the given patch and returns the new cell.
     
     Precondition: the cell is alive, the patch is free."""
