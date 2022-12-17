@@ -23,6 +23,7 @@ class BasePatch:
   def __init__(self:BasePatch, row:int, col:int):
     self._col = col
     self._row = row
+    self._obstactle = True
   
   def col(self:BasePatch)->int:
     """Returns the index of the column containing this patch."""
@@ -37,8 +38,17 @@ class ObstaclePatch:
   def __init__(self:ObstaclePatch):
     self._is_obstacle = True
 
-  def obstacle_change(self):
+  def change(self):
+    """This cell will no longer be an obstacle.
+    It changes the status of the patch to a CellPatch
+    
+    Precondition: the patch is a Obstacle patch"""
+    assert self.is_obstacle(), "the patch must be a Obstacle patch"
     self._is_obstacle = False
+    TODO: "maybe implement the patch changin to CellPatch or BasePatch"
+
+  def is_obstacle(self):
+    "Returns whether this is an obstacle patch."
 
 
 class CellPatch(BasePatch):

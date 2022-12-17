@@ -54,7 +54,7 @@ class Grid():
             find_neighbors(self, self.list_cells[0])
 
 
-
+# tried to create a function of find_neighbors which is independent
 def find_neighbors(self, curr_cell):
     '''
     This method searches the neighbors arround a cell in a 
