@@ -18,6 +18,7 @@ This module provided as material for Phase 1 of the exam project for DM562, DM85
 
 from __future__ import annotations # to use a class in type hints of its members
 from typing import Optional
+import random  # new Phase_2
 
 # This is a new Class
 class BasePatch:
@@ -183,6 +184,28 @@ class Cell:
     """Returns whether this cell is alive."""
     return self._alive
 
+  def tick(self:Cell, patch:CellPatch)->None:
+    self._age = self._age + 1  # update the age
+    self._last_division = self._last_division + 1  # update the last division counter
+    # TODO: implement the dying method here instead of in the simulation code as before
+    #       dying through ageing, division or poisoning
+
+    # chance of dying by poisoning
+    # TODO: figure out if the difference is a absolute value or if the toxicity 
+    #       always has to be higher than the resistance level. 
+    #       Technically the cell should not die if the resistance level is 
+    #       higher than the toxicity level (my thoughts Jonas)
+    p = abs(patch.toxicity() - self.resistance) / 100  # prob as described in pdf
+    if p < round(random.random(), 2):  # random probability for death by poisoning
+      self.die()
+
+    
+    # TODO: implement update status if cell is alive or dead, when it is not already
+    #       enought with the method die! (it also updates the status)
+
+
+  # old tick method from Phase_1
+  '''
   def tick(self:Cell)->None:  # added generation cumulation per tick
     """Register with this cell that a tick in the simulation happened making the cell age.
     
@@ -192,6 +215,7 @@ class Cell:
     self._last_division = self._last_division + 1
     self._generation = self._generation + 1  # new Phase_2
     # TODO: Not sure if generation is correctly implemented here
+  '''
 
   def die(self:Cell)->None:
     """This cell dies and is removed from its current patch.
@@ -202,6 +226,38 @@ class Cell:
     # removes the cell from this cell's patch
     self._patch.remove_cell()
   
+  # TODO: Check and correcht divide method
+  def divide(self:Cell, patch:CellPatch)->bool:
+    """Divides this cell using a given patch and returns a booelan if the division 
+    was successful. To divide the division probability is used and it is calculated
+    by reducing the base division probability by the cell resistance level divided by 20.
+    
+    The attempt fails with probability 1-p if the cell had a successful division during the last
+    Cell.division_cooldown tick. 
+    The resistance level is inherited from the parent cell where the value mutates randomly
+    between +/- 2 from the parent cell.
+    
+    Precondition: the cell is alive, the patch is free"""
+
+    assert patch.is_alive(), "the cell must be alive"
+    
+    p = self._division_probability - (Cell.resistance() / 20)
+    if random.uniform(0, 1) > p:
+      return False
+    
+    # TODO: problem to understand the statement with Cell.division_cooldown 
+    #       because it should not be possibly to divide during a cooldown?
+    if Cell.division_cooldown < Cell._last_division:
+      return False
+    
+    # TODO: not sure if this correctly appends a correct patch or just overrides the old one
+    self._last_division = 0  # reset the counter from the last division
+    self._divisions = self._divisions + 1  # updates the division counter
+    new_cell = Cell(patch, self.resistance() + int(random.randint(-2, 2)))
+    patch.cell(new_cell)
+
+  # old divide from Phase_1 (new in Phase_2)
+  '''
   def divide(self:Cell,patch:CellPatch)->Cell:
     """Divides this cell using the given patch and returns the new cell.
     
@@ -210,6 +266,7 @@ class Cell:
     self._last_division = 0 # reset the counter from the last division
     self._divisions = self._divisions + 1 # updates the division count
     return Cell(patch)
+  '''
 
   def died_by_age(self:Cell)->bool:
     # TODO: check age with age limit and if reached initial diying by age and increment statistics?
@@ -223,4 +280,4 @@ class Cell:
     # TODO: check died by toxicity exceeded and if reached initial diying by age and increment statistics?
     pass
 
-# TODO: add the last to changes from description.pdf and finish the other methods by diying
+# TODO: Finish the other methods by diying
