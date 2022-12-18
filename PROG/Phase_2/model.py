@@ -62,7 +62,6 @@ class ObstaclePatch(BasePatch):
   #   Precondition: the patch is a Obstacle patch"""
   #   assert self.is_obstacle(), "the patch must be a Obstacle patch"
   #   self._is_obstacle = False
-  #   # TODO: maybe implement the patch changing to CellPatch or BasePatch
     
   def is_obstacle(self:ObstaclePatch)->bool:
     "Returns whether this is an obstacle patch."
