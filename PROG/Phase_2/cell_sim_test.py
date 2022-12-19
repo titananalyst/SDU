@@ -72,6 +72,9 @@ def checker(input_grid, rows, cols):
 COLS, ROWS, GRID = checker(loader(strGrid), ROWS, COLS)
 
 def initialize_grid():
+    """Return a list of BasePatches with the size of the input grid and
+    returns a list of Obstacle- and CellPatches.
+    The CellPatches have assigned the toxicity level to them."""
     global COLS, ROWS, GRID
     
     base_patches = [BasePatch(i, j) for i in range(ROWS) for j in range(COLS)]
@@ -87,7 +90,7 @@ def initialize_grid():
                 print("appended ObstaclePatch")
 
             elif int(col) >= 0 and int(col) <= 9:
-                temp = CellPatch(base_patch.col(), base_patch.row, int(col))
+                temp = CellPatch(base_patch.col(), base_patch.row(), int(col))
                 patches.append(temp)
                 print("appended cellPatch")
                 
@@ -97,8 +100,6 @@ def initialize_grid():
 
 # test functions
 base_patches, patches = initialize_grid()
-print(len(patches))
-# for i in base_patches:
-#     print(i.row(), i.col())
-# for i in patches:
-#     print(type(i))
+
+vis = Visualiser(patches, ROWS, COLS, grid_lines=True)
+vis.wait_close()
