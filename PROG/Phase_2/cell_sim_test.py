@@ -25,7 +25,7 @@ os.chdir(dname)
 COLS = 0
 ROWS = 0
 GRID = []
-strGrid = 'grid_1.txt'
+strGrid = 'grid_err.txt'
 
 def list_grids():
     """Return a list of all grid files in the current directory."""
@@ -34,14 +34,14 @@ def list_grids():
         if i[-4:] == '.txt':
             list_grids.append(i)
     return list_grids
-print(list_grids())
+# print(list_grids())
 
 def loader(strGrid):
     """Returns a list with separated strings loaded from a chosen file
     from list_grids."""
     data = open(strGrid).read().split('\n')
     return data
-print(loader(strGrid))
+# print(loader(strGrid))
 
 def checker(input_grid, rows, cols):
     # Check if any element has a different length
@@ -85,14 +85,12 @@ def initialize_grid():
             base_patch = base_patches[0]
 
             if col == '%':
-                temp = ObstaclePatch(base_patch.col(), base_patch.row())
+                temp = ObstaclePatch(base_patch.row(), base_patch.col())
                 patches.append(temp)
-                print("appended ObstaclePatch")
 
             elif int(col) >= 0 and int(col) <= 9:
-                temp = CellPatch(base_patch.col(), base_patch.row(), int(col))
+                temp = CellPatch(base_patch.row(), base_patch.col(), int(col))
                 patches.append(temp)
-                print("appended cellPatch")
                 
             base_patches.pop(0)
 
@@ -100,6 +98,8 @@ def initialize_grid():
 
 # test functions
 base_patches, patches = initialize_grid()
-
+for i in patches:
+    print(i.row(), i.col())
+print(ROWS, COLS)
 vis = Visualiser(patches, ROWS, COLS, grid_lines=True)
 vis.wait_close()
