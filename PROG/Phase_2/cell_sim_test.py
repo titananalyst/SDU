@@ -41,7 +41,7 @@ def loader(strGrid):
     from list_grids."""
     data = open(strGrid).read().split('\n')
     return data
-print(loader(strGrid))
+# print(loader(strGrid))
 
 def checker(input_grid, rows, cols):
     # check that all lines contain % or int and not other letters
@@ -50,7 +50,6 @@ def checker(input_grid, rows, cols):
             if character != '%' and not isinstance(int(character), int):
                 print("This line contains invalid characters: ", element)
                 return False 
-
 
     # Check if any element has a different length
     first_length = len(input_grid[0])
@@ -77,7 +76,7 @@ def checker(input_grid, rows, cols):
         return False
     return cols, rows, input_grid
 # print(checker(loader(strGrid), ROWS, COLS))
-COLS, ROWS, GRID = checker(loader(strGrid), ROWS, COLS)
+
 
 def initialize_grid():
     """Return a list of BasePatches with the size of the input grid and
@@ -105,10 +104,21 @@ def initialize_grid():
     return base_patches, patches
 
 # test functions
+COLS, ROWS, GRID = checker(loader(strGrid), ROWS, COLS)
 base_patches, patches = initialize_grid()
-
+cells = []
 # for i in patches:
 #     print(i.row(), i.col())
+#     print(type(i))
+#     if isinstance(i, CellPatch):
+#         print(i.toxicity())
+
+# patch = random.choice(patches)
+# print(type(patch))
+
+cells.append(Cell(patches[30], 10000))
+
+
 
 vis = Visualiser(patches, ROWS, COLS, grid_lines=True)
 vis.wait_close()
