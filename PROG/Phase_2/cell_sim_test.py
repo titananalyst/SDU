@@ -36,7 +36,9 @@ def list_grids():
     return list_grids
 print(list_grids())
 
-def loader(strGrid):    
+def loader(strGrid):
+    """Returns a list with separated strings loaded from a chosen file
+    from list_grids."""
     data = open(strGrid).read().split('\n')
     return data
 print(loader(strGrid))
@@ -71,12 +73,32 @@ COLS, ROWS, GRID = checker(loader(strGrid), ROWS, COLS)
 
 def initialize_grid():
     global COLS, ROWS, GRID
-    # print(COLS, ROWS, GRID)
-
-    base_patches = [BasePatch(i, j) for i in range(ROWS) for j in range(COLS)]
     
-    return base_patches
+    base_patches = [BasePatch(i, j) for i in range(ROWS) for j in range(COLS)]
+    patches = []
 
-patches = initialize_grid()
-for i in patches:
-    print(i.row(), i.col())
+    for row in GRID:
+        for col in row:
+            base_patch = base_patches[0]
+
+            if col == '%':
+                temp = ObstaclePatch(base_patch.col(), base_patch.row())
+                patches.append(temp)
+                print("appended ObstaclePatch")
+
+            elif int(col) >= 0 and int(col) <= 9:
+                temp = CellPatch(base_patch.col(), base_patch.row, int(col))
+                patches.append(temp)
+                print("appended cellPatch")
+                
+            base_patches.pop(0)
+
+    return base_patches, patches
+
+# test functions
+base_patches, patches = initialize_grid()
+print(len(patches))
+# for i in base_patches:
+#     print(i.row(), i.col())
+# for i in patches:
+#     print(type(i))
