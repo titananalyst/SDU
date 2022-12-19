@@ -25,7 +25,7 @@ os.chdir(dname)
 COLS = 0
 ROWS = 0
 GRID = []
-strGrid = 'grid_err.txt'
+strGrid = 'grid_1.txt'
 
 def list_grids():
     """Return a list of all grid files in the current directory."""
@@ -41,9 +41,17 @@ def loader(strGrid):
     from list_grids."""
     data = open(strGrid).read().split('\n')
     return data
-# print(loader(strGrid))
+print(loader(strGrid))
 
 def checker(input_grid, rows, cols):
+    # check that all lines contain % or int and not other letters
+    for element in input_grid:
+        for character in element:
+            if character != '%' and not isinstance(int(character), int):
+                print("This line contains invalid characters: ", element)
+                return False 
+
+
     # Check if any element has a different length
     first_length = len(input_grid[0])
     if all(len(element) == first_length for element in input_grid):
@@ -98,8 +106,9 @@ def initialize_grid():
 
 # test functions
 base_patches, patches = initialize_grid()
-for i in patches:
-    print(i.row(), i.col())
-print(ROWS, COLS)
+
+# for i in patches:
+#     print(i.row(), i.col())
+
 vis = Visualiser(patches, ROWS, COLS, grid_lines=True)
 vis.wait_close()
