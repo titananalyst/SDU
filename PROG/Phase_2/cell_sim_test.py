@@ -15,9 +15,12 @@ from random import randint, choice
 from time import sleep
 import os
 
-# TODO: make a loader 
-# TODO: make a checker for the loaded grid validity
-# TODO: make it possible to list dir to chose a different grid to load
+# TODO: make a loader DONE
+# TODO: make a checker for the loaded grid validity DONE
+# TODO: make it possible to list dir to chose a different grid to load DONE
+# TODO: make function find neighbors of cells and implement the list of free neighbors
+#       in the same function by popping the obstacles and have cells out.
+
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
@@ -25,7 +28,7 @@ os.chdir(dname)
 COLS = 0
 ROWS = 0
 GRID = []
-strGrid = 'grid_1.txt'
+strGrid = 'grid_2.txt'
 
 def list_grids():
     """Return a list of all grid files in the current directory."""
@@ -116,7 +119,7 @@ cells = []
 # patch = random.choice(patches)
 # print(type(patch))
 
-cells.append(Cell(patches[30], 10000))
+cells.append(Cell(patches[60], patches[60].toxicity()))
 
 
 
