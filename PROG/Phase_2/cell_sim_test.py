@@ -28,7 +28,7 @@ os.chdir(dname)
 COLS = 0
 ROWS = 0
 GRID = []
-strGrid = 'grid_2.txt'
+strGrid = 'grid_3.txt'
 
 def list_grids():
     """Return a list of all grid files in the current directory."""
@@ -53,6 +53,7 @@ def checker(input_grid, rows, cols):
             if character != '%' and not isinstance(int(character), int):
                 print("This line contains invalid characters: ", element)
                 return False 
+    # TODO: also check special characters! now just numbers letters and "%"
 
     # Check if any element has a different length
     first_length = len(input_grid[0])
@@ -119,7 +120,7 @@ cells = []
 # patch = random.choice(patches)
 # print(type(patch))
 
-cells.append(Cell(patches[60], patches[60].toxicity()))
+cells.append(Cell(patches[30], 1))
 
 
 
