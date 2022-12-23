@@ -247,7 +247,7 @@ class Cell:
     
     # TODO: problem to understand the statement with Cell.division_cooldown 
     #       because it should not be possibly to divide during a cooldown?
-    if Cell.division_cooldown < Cell._last_division:
+    if Cell._division_cooldown < Cell._last_division:
       return False
     
     # TODO: not sure if this correctly appends a correct patch or just overrides the old one
@@ -270,7 +270,9 @@ class Cell:
 
   def died_by_age(self:Cell)->bool:
     # TODO: check age with age limit and if reached initial diying by age and increment statistics?
-    pass
+    if self._age > self._age_limit:
+      Cell.die()
+      return True
 
   def died_by_division(self:Cell)->bool:
     # TODO: check division with division limit and if reached initial diying by age and increment statistics?
@@ -281,3 +283,7 @@ class Cell:
     pass
 
 # TODO: Finish the other methods by diying
+
+if __name__ == "__main__":
+  import doctest
+  doctest.testmod()

@@ -28,7 +28,8 @@ os.chdir(dname)
 COLS = 0
 ROWS = 0
 GRID = []
-strGrid = 'grid_3.txt'
+cells = []
+strGrid = 'grid_1.txt'
 
 def list_grids():
     """Return a list of all grid files in the current directory."""
@@ -47,12 +48,23 @@ def loader(strGrid):
 # print(loader(strGrid))
 
 def checker(input_grid, rows, cols):
+    # TODO: try to implement doctests (look it up)
+    """Checks if the input is valid to initialize a grid
+    
+    >>> checker(input_grid, rows, cols)
+    Traceback (most recent call last):
+        ...
+    raise ValueError("colums are not equal")
+    ValueError: colums are not equal
+
+    """
     # check that all lines contain % or int and not other letters
     for element in input_grid:
         for character in element:
             if character != '%' and not isinstance(int(character), int):
-                print("This line contains invalid characters: ", element)
-                return False 
+                raise ValueError("This line contains invalid characters: ", element)
+                # print("This line contains invalid characters: ", element)
+                # return False 
     # TODO: also check special characters! now just numbers letters and "%"
 
     # Check if any element has a different length
@@ -60,24 +72,27 @@ def checker(input_grid, rows, cols):
     if all(len(element) == first_length for element in input_grid):
         print("all columns equal")
     else:
-        print("colums are not equal")
-        return False
+        raise ValueError("colums are not equal")
+        # print("colums are not equal")
+        # return False
 
     # check if rows are bigger than 3
     if len(input_grid) >= 3:
         print("rows bigger than 3")
         rows = len(input_grid)
     else:
-        print("there are not enough rows")
-        return False
+        raise ValueError("therea re not enough rows")
+        # print("there are not enough rows")
+        # return False
 
     # check if colums are bigger than 3
     if all(len(element) >= 3 for element in input_grid):
         print("cols bigger than 3")
         cols = len(input_grid[0])
     else:
-        print("there are not enough cols")
-        return False
+        raise ValueError("there are not enough cols")
+        # print("there are not enough cols")
+        # return False
     return cols, rows, input_grid
 # print(checker(loader(strGrid), ROWS, COLS))
 
@@ -107,22 +122,28 @@ def initialize_grid():
 
     return base_patches, patches
 
+def init_pop():
+    # patch = random.choice(patches)
+    # print(type(patch))
+
+    # cells.append(Cell(patches[30], 1))
+    pass
+
+
+
+
+
+
+
+
+
+
 # test functions
-COLS, ROWS, GRID = checker(loader(strGrid), ROWS, COLS)
-base_patches, patches = initialize_grid()
-cells = []
-# for i in patches:
-#     print(i.row(), i.col())
-#     print(type(i))
-#     if isinstance(i, CellPatch):
-#         print(i.toxicity())
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+    COLS, ROWS, GRID = checker(loader(strGrid), ROWS, COLS)
+    base_patches, patches = initialize_grid()
 
-# patch = random.choice(patches)
-# print(type(patch))
-
-cells.append(Cell(patches[30], 1))
-
-
-
-vis = Visualiser(patches, ROWS, COLS, grid_lines=True)
-vis.wait_close()
+    vis = Visualiser(patches, ROWS, COLS, grid_lines=True)
+    vis.wait_close()
