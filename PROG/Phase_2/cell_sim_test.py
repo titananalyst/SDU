@@ -20,6 +20,7 @@ import os
 # TODO: make it possible to list dir to chose a different grid to load DONE
 # TODO: make function find neighbors of cells and implement the list of free neighbors
 #       in the same function by popping the obstacles and have cells out.
+# TODO: constaint of initialization population for row x col - obstacle patches
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -130,8 +131,45 @@ def init_pop():
     pass
 
 
+class Simulation():
+    def __init__(self):
+        
 
 
+        
+    Sim.tick(Cell)
+    #Deaths:
+    if self.died_by_age and Cell.died_by_division:
+        self._died_by_age +=1
+        self._died_by_division +=1
+        self._died_by_age_division += 1
+        if self.died_by_poisening:
+            self._died_by_poisening +=1
+            self._died_by_age_poisening +=1
+            self._died_by_division_poisening +=1
+            self._died_by_age_division_poisening +=1
+            self.die
+        self.die
+
+    elif self.died_by_age:
+        self._died_by_age +=1
+        if self.died_by_poisening:
+            self._died_by_poisening +=1
+            self._died_by_age_poisening +=1
+            self.die
+        self.die
+
+    elif self.died_by_division:
+        self._died_by_division +=1
+        if self.died_by_poisening:
+            self._died_by_poisening +=1
+            self._died_by_division_poisening +=1
+            self.die
+        self.die
+
+    elif self.died_by_poisening:
+        self._died_by_poisening +=1
+        self.die
 
 
 

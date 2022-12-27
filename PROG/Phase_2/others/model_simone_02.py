@@ -12,9 +12,11 @@ This module provided as material for Phase 1 of the exam project for DM562, DM85
 # Changes and bugfixes
 # - Patch renders its coordinates in the wrong order (Patch.__repr__)
 # - Divide is missing a precondition (Cell.divide)
+
 from __future__ import annotations # to use a class in type hints of its members
 from typing import Optional
 import random  # new Phase_2
+
 # This is a new Class
 class BasePatch:
   """Represents a 'BasePatch' at the intersection of the given row and column of the simulation grid."""
@@ -206,17 +208,17 @@ class Cell:
     self._last_division = self._last_division + 1 # update the last division counter
 
     #Deaths:
-    if self.died_by_age and self.died_by_division:
+    if self.died_by_age() and self.died_by_division():
         self._died_by_age +=1
         self._died_by_division +=1
         self._died_by_age_division += 1
-        if self.died_by_poisening:
+        if self.died_by_poisening():
             self._died_by_poisening +=1
             self._died_by_age_poisening +=1
             self._died_by_division_poisening +=1
             self._died_by_age_division_poisening +=1
-            self.die
-        self.die
+            self.die()
+        self.die()
 
     elif self.died_by_age:
         self._died_by_age +=1

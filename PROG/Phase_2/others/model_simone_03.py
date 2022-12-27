@@ -12,9 +12,11 @@ This module provided as material for Phase 1 of the exam project for DM562, DM85
 # Changes and bugfixes
 # - Patch renders its coordinates in the wrong order (Patch.__repr__)
 # - Divide is missing a precondition (Cell.divide)
+
 from __future__ import annotations # to use a class in type hints of its members
 from typing import Optional
 import random  # new Phase_2
+
 # This is a new Class
 class BasePatch:
   """Represents a 'BasePatch' at the intersection of the given row and column of the simulation grid."""
