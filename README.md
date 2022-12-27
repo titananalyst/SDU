@@ -4,7 +4,7 @@
 
 [ ] Create Grid and Simulation Class (encapsulated programming)
 
-([ ] Append Execute file)
+[ ] Create menu.py file and execute it in Cell_sim.py
 
 [ ] Append statistics to Simulation
 
