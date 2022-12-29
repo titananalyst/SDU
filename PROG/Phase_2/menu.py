@@ -112,7 +112,7 @@ def print_menu():
                 print("default values are enabled")
                 sim_status = "Default"
                 print_menu()
-                continue
+                
 
             div_input = int(input("Enter number of max divisions of a cell (min 1): "))
             if not div_input < 1:
@@ -124,7 +124,7 @@ def print_menu():
                 sim_status = "Default"
                 sim.board.age_lim = 10
                 print_menu()
-                continue
+                
 
             prob_input = float(input("Enter probability for a cell to divide (between 0 and 1): "))
             if prob_input >= 0 and prob_input <= 1:
@@ -137,7 +137,7 @@ def print_menu():
                 sim.board.age_lim = 10
                 sim.board.div_lim = 2
                 print_menu()
-                continue
+                
 
             cooldown_input = int(input("Enter ticks of cooldown for one cell to divide (not negative): "))
             if not cooldown_input < 0:
@@ -151,7 +151,7 @@ def print_menu():
                 sim.board.div_lim = 2
                 sim.board.prob = 0.2
                 print_menu()
-                continue
+                
 
             ticks_input = int(input("Enter number of ticks for the duration of the simulation (min 1): "))
             if ticks_input >= 1:    
@@ -166,7 +166,7 @@ def print_menu():
                 sim.board.prob = 0.2
                 sim.board.cooldown = 2
                 print_menu()
-                continue
+                
 
             vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
             if vis_input == 0:
@@ -183,43 +183,43 @@ def print_menu():
             print_menu()
 
 
-        elif menu_choice == 3:
-            '''
-            this starts the simulation that has been called from the cell_sim.py
-            '''
-            sim.start()
-            print_menu()
-
-        
-        elif menu_choice == 4:
-            '''
-            this reset alle tha parametres to the pre-chosen default values.
-            '''
-            sim_status = "Default"
-            sim.board.age_lim = 10
-            sim.board.div_lim = 2
-            sim.board.prob = 0.2
-            sim.board.cooldown = 2
-            sim.max_ticks = 100
-            sim.visualisation = True
-
-            print("Settings reset to default settings.\n")
-            print_menu()
-
-        
-        elif menu_choice == 5:
-            '''
-            quit the program with the imported quit function. 
-            '''
-            print('Bye!')
-            exit()
-
-        
-        else:
-            print('\nEnter a valid option!')
-
-
-    except ValueError:
-        print('\n--- fatal ERROR!--- | Try again and enter just integer numbers!\n')
-        sleep(1)
+    elif menu_choice == 3:
+        '''
+        this starts the simulation that has been called from the cell_sim.py
+        '''
+        sim.start()
         print_menu()
+
+        
+    elif menu_choice == 4:
+        '''
+        this reset alle tha parametres to the pre-chosen default values.
+        '''
+        sim_status = "Default"
+        sim.board.age_lim = 10
+        sim.board.div_lim = 2
+        sim.board.prob = 0.2
+        sim.board.cooldown = 2
+        sim.max_ticks = 100
+        sim.visualisation = True
+
+        print("Settings reset to default settings.\n")
+        print_menu()
+
+    
+    elif menu_choice == 5:
+        '''
+        quit the program with the imported quit function. 
+        '''
+        print('Bye!')
+        exit()
+
+    
+    else:
+        print('\nEnter a valid option!')
+
+
+# except ValueError:
+#     print('\n--- fatal ERROR!--- | Try again and enter just integer numbers!\n')
+#     sleep(1)
+#     print_menu()
