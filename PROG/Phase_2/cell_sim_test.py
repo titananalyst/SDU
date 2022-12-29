@@ -21,6 +21,9 @@ import os
 # TODO: make function find neighbors of cells and implement the list of free neighbors
 #       in the same function by popping the obstacles and have cells out.
 # TODO: constaint of initialization population for row x col - obstacle patches
+# TODO: count the number of CellPatches in initialize_grid
+# TODO: import menu.py and run menu in cell_sim.py
+# TODO:
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -124,13 +127,17 @@ def initialize_grid():
     return base_patches, patches
 
 def init_pop():
+    # TODO: initialize population random from CellPatches exlude ObstaclePatches
     # patch = random.choice(patches)
     # print(type(patch))
 
     # cells.append(Cell(patches[30], 1))
     pass
 
-
+class Grid():
+    def __init__(self):
+        # TODO: add the functions as methods, global variables as attributes
+        pass
 
 
 class Simulation():
