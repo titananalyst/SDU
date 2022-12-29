@@ -131,6 +131,8 @@ def init_pop():
     pass
 
 
+
+
 class Simulation():
     def __init__(self):
         
@@ -179,11 +181,10 @@ class Simulation():
 
 # test functions
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+    # import doctest
+    # doctest.testmod()
     COLS, ROWS, GRID = checker(loader(strGrid), ROWS, COLS)
     base_patches, patches = initialize_grid()
 
     vis = Visualiser(patches, ROWS, COLS, grid_lines=True)
     vis.wait_close()
-    # print()
