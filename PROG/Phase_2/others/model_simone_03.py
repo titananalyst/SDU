@@ -1,4 +1,3 @@
-"model new"
 """
 This module defines the data model for the simulation. Specifically, it provides a class for representing patches of the simulation grid and a class for representing cells that inhabit these patches.
 Requirements
