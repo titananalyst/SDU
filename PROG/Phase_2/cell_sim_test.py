@@ -186,3 +186,4 @@ if __name__ == "__main__":
 
     vis = Visualiser(patches, ROWS, COLS, grid_lines=True)
     vis.wait_close()
+    # print()
