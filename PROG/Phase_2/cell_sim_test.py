@@ -30,12 +30,6 @@ abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 
-COLS = 0
-ROWS = 0
-GRID = []
-cells = []
-strGrid = 'grid_1.txt'
-
 
 class Grid():
     def __init__(self:Grid):
@@ -49,6 +43,9 @@ class Grid():
         self._grid_data = None
         self._list_patches = []
         self._list_cell_patches = []
+        self._list_cells_living = []
+        self._init_pop = 2
+
         
     def cols(self:Grid)->int:
         """Return the number of columns in the grid"""
@@ -144,64 +141,88 @@ class Grid():
 
                 base_patches.pop(0)
 
-    def init_pop(patches, cells):
-        # TODO: initialize population random from CellPatches exlude ObstaclePatches
-        # patch = random.choice(patches)
-        # print(type(patch))
+    def init_pop(self):
+        """Creates new instances of Cells on a CellPatch until the maximum number
+        of initial population."""
+        temp = [i for i in self._list_patches if isinstance(i, CellPatch)]
 
-        # cells.append(Cell(patches[30], 1))
-        pass
+        while len(self._list_cells_living) < self._init_pop:
+            patch = random.choice(temp)  # does not prevent of choosing the same patch twice
+            self._list_cells_living.append(Cell(patch, 0))  # initialize resistance 0
 
 
+class Simulation(Grid):
+    def __init__(self:Simulation):
+        super().__init__()
+        self._max_ticks = 100
+        self._visualisation = True
+        # statistics:
+        self._died_by_age = 0
+        self._died_by_division = 0
+        self._died_by_poisening = 0 
+        self._died_by_age_division_poisening = 0
+        self._died_by_age_division = 0
+        self._died_by_age_poisening = 0
+        self._died_by_division_poisening = 0
 
-
-class Simulation():
-    def __init__(self):
         
 
+    def start(self:Simulation):
+        ticks = 0
+        if self._visualisation == True:
+            vis = Visualiser(g._list_patches, g.rows(), g.cols(), grid_lines= True)
+            sleep(1)
 
-        '''
-        Sim.tick(Cell)
-        #Deaths:
-        if self.died_by_age and Cell.died_by_division:
-            self._died_by_age +=1
-            self._died_by_division +=1
-            self._died_by_age_division += 1
-            if self.died_by_poisening:
-                self._died_by_poisening +=1
-                self._died_by_age_poisening +=1
-                self._died_by_division_poisening +=1
-                self._died_by_age_division_poisening +=1
+        while ticks < self._max_ticks and len(g._list_cells_living) > 0:
+            for cell in g._list_cells_living:
+                cell.tick(cell.patch())
+                print(g._list_cells_living)
+                print(g.rows(), g.cols())
+                cell.divide(cell.patch(), g.rows(), g.cols())
+            
+            if self._visualisation == True:
+                sleep(1)
+                vis.update()
+            ticks += 1
+            # g._list_cells_living.extend(temp)
+
+            '''
+            #Deaths:
+            if self.died_by_age and Cell.died_by_division:
+                self._died_by_age +=1
+                self._died_by_division +=1
+                self._died_by_age_division += 1
+                if self.died_by_poisening:
+                    self._died_by_poisening +=1
+                    self._died_by_age_poisening +=1
+                    self._died_by_division_poisening +=1
+                    self._died_by_age_division_poisening +=1
+                    self.die
                 self.die
-            self.die
 
-        elif self.died_by_age:
-            self._died_by_age +=1
-            if self.died_by_poisening:
-                self._died_by_poisening +=1
-                self._died_by_age_poisening +=1
+            elif self.died_by_age:
+                self._died_by_age +=1
+                if self.died_by_poisening:
+                    self._died_by_poisening +=1
+                    self._died_by_age_poisening +=1
+                    self.die
                 self.die
-            self.die
 
-        elif self.died_by_division:
-            self._died_by_division +=1
-            if self.died_by_poisening:
-                self._died_by_poisening +=1
-                self._died_by_division_poisening +=1
+            elif self.died_by_division:
+                self._died_by_division +=1
+                if self.died_by_poisening:
+                    self._died_by_poisening +=1
+                    self._died_by_division_poisening +=1
+                    self.die
                 self.die
-            self.die
 
-        elif self.died_by_poisening:
-            self._died_by_poisening +=1
-            self.die
-        '''
-
+            elif self.died_by_poisening:
+                self._died_by_poisening +=1
+                self.die
+            '''
 
 
 
-
-
-# test functions
 if __name__ == "__main__":
     # docstest
     # import doctest
@@ -213,7 +234,11 @@ if __name__ == "__main__":
     g.loader()  # loads the grid of the desired grid.txt file
     g.checker()  # checks the grid input about errors
     g.initialize_grid() # initializes the grid
+    g.init_pop()  # initializes living cells on the grid
 
-    vis = Visualiser(g.list_patches(), g.rows(), g.cols(), grid_lines=True)
-    vis.wait_close()
+    s = Simulation()
+    s.start() # starts the simulation
+
+    # vis = Visualiser(g.list_patches(), g.rows(), g.cols(), grid_lines=True)
+    # vis.wait_close()
 

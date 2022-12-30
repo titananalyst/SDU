@@ -123,9 +123,61 @@ class CellPatch(BasePatch):
 
 
 # This is the modified "Cell" class from Phase_1
+class CellPatch(BasePatch):
+  """Represents a 'patch' at the intersection of the riven row and column of the simulation grid."""
+  
+  def __init__(self:CellPatch, row:int, col:int, toxicity:int):
+    """    
+    Parameters
+    ----------
+    row, col: int
+      The index of the row and column containing this patch.
+    """
+    self._col = col
+    self._row = row
+    self._toxicity = toxicity  # new Phase_2
+    self._cell : Optional[Cell] = None
+
+  def col(self:CellPatch)->int:
+    """Returns the index of the column containing this patch."""
+    return self._col
+
+  def row(self:CellPatch)->int:
+    """Returns the index of the row containing this patch."""
+    return self._row
+
+  def toxicity(self:CellPatch)->int:  # new Phase_2
+    """Returns the toxicity level of this patch."""
+    return self._toxicity
+  
+  def has_cell(self:CellPatch)->bool:
+    """Checks if the patch holds a cell."""
+    return self._cell is not None
+
+  def put_cell(self:CellPatch,cell:Cell)->None:
+    """Puts a cell on this patch.
+    
+    Preconditions: there is no cell on this patch and the cell is not on another patch
+    """
+    assert not self.has_cell(), "This patch has a cell."
+    assert cell.patch() is self, "The cell is on another patch."
+    self._cell = cell
+
+  def remove_cell(self:CellPatch)->None:
+    """Removes any cell currently on this patch."""
+    self._cell = None
+
+  def cell(self:CellPatch)->Optional[Cell]:
+    """Returns the cell currently on this patch, if any."""
+    return self._cell
+
+  def __repr__(self:CellPatch)->str:
+    """Returns a string representation of this patch."""
+    return f"Patch({self.row()}, {self.col()})"
+
+# This is the modified "Cell" class from Phase_1
 class Cell:
   """Represents a cell in the simulation."""
-
   def __init__(self:Cell,patch:CellPatch,resistance_level:int):
     """    
     Parameters
@@ -142,7 +194,6 @@ class Cell:
     # TODO: not sure if parent should be written as argument in the constructor or not
     #       since it is an optional input for the _parent attribute
     self._generation = 0
-
     # old from Phase_1
     self._patch = patch
     self._age = 0
@@ -151,6 +202,15 @@ class Cell:
     self._alive = True
     # inform patch that this cell is on it
     patch.put_cell(self)
+
+    #statistics:
+    self._died_by_age = 0
+    self._died_by_division = 0
+    self._died_by_poisening = 0 
+    self._died_by_age_division_poisening = 0
+    self._died_by_age_division = 0
+    self._died_by_age_poisening = 0
+    self._died_by_division_poisening = 0
   
   def resistance(self:Cell)->int:  # new Phase_2
     """Returns the resistance level of this cell."""
@@ -184,39 +244,6 @@ class Cell:
     """Returns whether this cell is alive."""
     return self._alive
 
-  def tick(self:Cell, patch:CellPatch)->None:
-    self._age = self._age + 1  # update the age
-    self._last_division = self._last_division + 1  # update the last division counter
-    # TODO: implement the dying method here instead of in the simulation code as before
-    #       dying through ageing, division or poisoning
-
-    # chance of dying by poisoning
-    # TODO: figure out if the difference is a absolute value or if the toxicity 
-    #       always has to be higher than the resistance level. 
-    #       Technically the cell should not die if the resistance level is 
-    #       higher than the toxicity level (my thoughts Jonas)
-    p = abs(patch.toxicity() - self.resistance) / 100  # prob as described in pdf
-    if p < round(random.random(), 2):  # random probability for death by poisoning
-      self.die()
-
-    
-    # TODO: implement update status if cell is alive or dead, when it is not already
-    #       enought with the method die! (it also updates the status)
-
-
-  # old tick method from Phase_1
-  '''
-  def tick(self:Cell)->None:  # added generation cumulation per tick
-    """Register with this cell that a tick in the simulation happened making the cell age.
-    
-    Precondition: the cell is alive."""
-    assert self.is_alive(), "the cell must be alive."
-    self._age = self._age + 1
-    self._last_division = self._last_division + 1
-    self._generation = self._generation + 1  # new Phase_2
-    # TODO: Not sure if generation is correctly implemented here
-  '''
-
   def die(self:Cell)->None:
     """This cell dies and is removed from its current patch.
 
@@ -225,9 +252,89 @@ class Cell:
     self._alive = False
     # removes the cell from this cell's patch
     self._patch.remove_cell()
+
+  def died_by_age(self:Cell)->bool:
+    """returns if this cell i readynto die by aging"""
+    if self._age>self._age_limit:
+      return True
+    else:
+      return False
+
+  def died_by_division(self:Cell)->bool:
+    if self._divisions>=self._division_limit:
+      return True
+    else:
+      return False
   
-  # TODO: Check and correcht divide method
-  def divide(self:Cell, patch:CellPatch)->bool:
+  def died_by_poisening(self:Cell)->bool:
+    if ((self._patch.toxicity() - self.resistance()) / 100)>0: # this is only true if the resistance i lover than the toxity lvl. 
+      p=(self._patch.toxicity() - self.resistance()) / 100 #sest an probability to die from toxic patch
+      # prob as described in pdf
+      if p >= round(random.random(), 2):  # random probability for death by poisoning
+        return True
+      else: 
+        return False
+
+
+  def tick(self:Cell, patch:CellPatch)->None:
+    self._age = self._age + 1  # update the age
+    self._last_division = self._last_division + 1 # update the last division counter
+    # print(type(self))
+    # print(self.is_alive())
+    #Deaths:
+    if self.died_by_age() and self.died_by_division():
+        self._died_by_age +=1
+        self._died_by_division +=1
+        self._died_by_age_division += 1
+        if self.died_by_poisening():
+            self._died_by_poisening +=1
+            self._died_by_age_poisening +=1
+            self._died_by_division_poisening +=1
+            self._died_by_age_division_poisening +=1
+            self.die()
+        self.die()
+
+    elif self.died_by_age():
+        self._died_by_age +=1
+        if self.died_by_poisening():
+            self._died_by_poisening +=1
+            self._died_by_age_poisening +=1
+            self.die()
+        self.die()
+
+    elif self.died_by_division():
+        self._died_by_division +=1
+        if self.died_by_poisening():
+            self._died_by_poisening +=1
+            self._died_by_division_poisening +=1
+            self.die()
+        self.die()
+
+    elif self.died_by_poisening():
+        self._died_by_poisening +=1
+        self.die()     
+
+  def find_neighbours(self:Cell, total_rows:int, total_col:int)->list: 
+    assert self.is_alive()
+    neighbors = []
+
+    for i in range((self.patch().row()-1) , (self.patch().row() +2)):
+      for j in range((self.patch().col()-1) , (self.patch().col() +2)):
+        # TODO: append patches as neighbours and not just the numbers... rows cols
+        print(i, j)
+        print(i% total_rows,j% total_col)
+        neighbors.append(BasePatch(i% total_rows,j% total_col))
+
+    for k in neighbors:
+        if CellPatch.has_cell(k) == True:
+            neighbors.pop(k)
+        elif ObstaclePatch.is_obstacle(k) == True:
+            neighbors.pop(k)
+
+    return neighbors
+
+
+  def divide(self:Cell, patch:CellPatch,  total_rows:int, total_col:int)->bool:
     """Divides this cell using a given patch and returns a booelan if the division 
     was successful. To divide the division probability is used and it is calculated
     by reducing the base division probability by the cell resistance level divided by 20.
@@ -238,51 +345,40 @@ class Cell:
     between +/- 2 from the parent cell.
     
     Precondition: the cell is alive, the patch is free"""
-
-    assert patch.is_alive(), "the cell must be alive"
+    assert self.is_alive(), "the cell must be alive"
     
-    p = self._division_probability - (Cell.resistance() / 20)
-    if random.uniform(0, 1) > p:
+    
+    if self._division_cooldown > self._last_division:
       return False
     
-    # TODO: problem to understand the statement with Cell.division_cooldown 
-    #       because it should not be possibly to divide during a cooldown?
-    if Cell._division_cooldown < Cell._last_division:
-      return False
+    elif self._division_cooldown <= self._last_division:
+
+        p = self._division_probability - (self.resistance() / 20)
+        if random.uniform(0, 1) >= p:
+            if self.find_neighbours(total_rows, total_col) != []:
+                new_patch = random.choice(self.find_neighbours(total_rows, total_col))  
     
-    # TODO: not sure if this correctly appends a correct patch or just overrides the old one
-    self._last_division = 0  # reset the counter from the last division
-    self._divisions = self._divisions + 1  # updates the division counter
-    new_cell = Cell(patch, self.resistance() + int(random.randint(-2, 2)))
-    patch.cell(new_cell)
 
-  # old divide from Phase_1 (new in Phase_2)
-  '''
-  def divide(self:Cell,patch:CellPatch)->Cell:
-    """Divides this cell using the given patch and returns the new cell.
-    
-    Precondition: the cell is alive, the patch is free."""
-    assert self.is_alive(), "the cell must be alive."
-    self._last_division = 0 # reset the counter from the last division
-    self._divisions = self._divisions + 1 # updates the division count
-    return Cell(patch)
-  '''
+                if self.resistance() == 0:
+                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(0, 2)))
 
-  def died_by_age(self:Cell)->bool:
-    # TODO: check age with age limit and if reached initial diying by age and increment statistics?
-    if self._age > self._age_limit:
-      Cell.die()
-      return True
+                if self.resistance() == 1:
+                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(-1, 2)))
+        
+                if self.resistance() == 8:
+                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 1)))
 
-  def died_by_division(self:Cell)->bool:
-    # TODO: check division with division limit and if reached initial diying by age and increment statistics?
-    pass
+                if self.resistance() == 9:
+                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 0)))
 
-  def died_by_poisoning(self:Cell)->bool:
-    # TODO: check died by toxicity exceeded and if reached initial diying by age and increment statistics?
-    pass
+                else:
+                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 2))) 
+        
+                new_patch.cell(new_cell)
+                new_patch.put_cell(new_cell)
 
-# TODO: Finish the other methods by diying
+                self._last_division = 0  # reset the counter from the last division
+                self._divisions = self._divisions + 1
 
 if __name__ == "__main__":
   import doctest
