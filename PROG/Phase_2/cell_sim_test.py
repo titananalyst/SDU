@@ -158,18 +158,15 @@ class Grid():
             for j in range((curr_cell.patch().col()-1) , (curr_cell.patch().col() +2)):
                 # print(i, j) # i% self.rows() ,j% self.cols()
                 neighbors.extend([patch for patch in self._list_patches if patch.row() == (i % self.rows()) and patch.col() == (j % self.cols())])
+        print(neighbors)
 
         for k in neighbors:
-            # print(type(k))
             if isinstance(k, CellPatch) and k.has_cell() == True:
-                print(k, type(k))
                 neighbors.remove(k)
                 
-            elif isinstance(k, ObstaclePatch) and k.is_obstacle() == True:
+            elif isinstance(k, ObstaclePatch):
                 neighbors.remove(k)
-            else:
-                print(type(k))
-        print(neighbors)
+
         return neighbors
 
 
