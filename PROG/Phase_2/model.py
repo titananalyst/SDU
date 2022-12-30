@@ -276,7 +276,7 @@ class Cell:
         return False
 
 
-  def tick(self:Cell, patch:CellPatch)->None:
+  def tick(self:Cell)->None:
     self._age = self._age + 1  # update the age
     self._last_division = self._last_division + 1 # update the last division counter
     # print(type(self))
@@ -313,25 +313,6 @@ class Cell:
     # elif self.died_by_poisening():
     #     self._died_by_poisening +=1
     #     self.die()     
-
-  def find_neighbours(self:Cell, total_rows:int, total_col:int)->list: 
-    assert self.is_alive()
-    neighbors = []
-
-    for i in range((self.patch().row()-1) , (self.patch().row() +2)):
-      for j in range((self.patch().col()-1) , (self.patch().col() +2)):
-        # TODO: append patches as neighbours and not just the numbers... rows cols
-        print(i, j)
-        neighbors.append(BasePatch(i% total_rows,j% total_col))
-    print(neighbors)
-
-    for k in neighbors:
-        if CellPatch.has_cell(k) == True:
-            neighbors.pop(k)
-        elif ObstaclePatch.is_obstacle(k) == True:
-            neighbors.pop(k)
-
-    return neighbors
 
 
   def divide(self:Cell, patch:CellPatch, neighbours:list)->bool:
