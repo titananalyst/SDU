@@ -207,11 +207,11 @@ class Simulation(Grid):
             else:
                 new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 2))) 
 
-            print(new_cell, type(new_cell))
+            # print(new_cell, type(new_cell))
             return new_cell
 
-        if neighbours == []:
-            print("neighbours list is empty")
+        # if neighbours == []:
+        #     print("neighbours list is empty")
 
 
     def start(self:Simulation):
@@ -220,7 +220,7 @@ class Simulation(Grid):
             vis = Visualiser(g._list_patches, g.rows(), g.cols(), grid_lines= True)
 
         while ticks < self._max_ticks and len(g._list_cells_living) > 0:
-            print(g._list_cells_living)
+            # print(g._list_cells_living)
             random.shuffle(g._list_cells_living)
             temp = []
             for cell in g._list_cells_living:
@@ -236,7 +236,7 @@ class Simulation(Grid):
                 # self._list_cells_living.append()
             
             if self._visualisation == True:
-                sleep(0.2)
+                # sleep(0.2)
                 vis.update()
             ticks += 1
             g._list_cells_living.extend(temp)
