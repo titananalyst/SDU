@@ -158,14 +158,16 @@ class Grid():
             for j in range((curr_cell.patch().col()-1) , (curr_cell.patch().col() +2)):
                 # print(i, j) # i% self.rows() ,j% self.cols()
                 neighbors.extend([patch for patch in self._list_patches if patch.row() == (i % self.rows()) and patch.col() == (j % self.cols())])
-        print(neighbors)
 
-        for k in neighbors:
-            if isinstance(k, CellPatch) and k.has_cell() == True:
-                neighbors.remove(k)
-                
-            elif isinstance(k, ObstaclePatch):
-                neighbors.remove(k)
+                for k in neighbors:
+                    if isinstance(k, CellPatch) and k.has_cell() == True:
+                        neighbors.remove(k)
+                        
+                    elif isinstance(k, ObstaclePatch):
+                        neighbors.remove(k)
+                    
+                    else:
+                        continue
 
         return neighbors
 
@@ -184,27 +186,62 @@ class Simulation(Grid):
         self._died_by_age_poisening = 0
         self._died_by_division_poisening = 0
 
+    def append_neighbors(self:Simulation, neighbours:list, curr_cell):
+        if neighbours != []:
         
+            new_patch = random.choice(neighbours) 
+            # print(new_patch, type(new_patch), new_patch.has_cell())
+
+            if curr_cell.resistance() == 0:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(0, 2)))
+
+            elif curr_cell.resistance() == 1:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-1, 2)))
+    
+            elif curr_cell.resistance() == 8:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 1)))
+
+            elif curr_cell.resistance() == 9:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 0)))
+            
+            else:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 2))) 
+        
+        if neighbours == []:
+            print("neighbours list is empty")
+            return
+        print(new_cell, type(new_cell))
+        return new_cell
+        # g._list_cells_living.append(new_cell)
 
     def start(self:Simulation):
         ticks = 0
         if self._visualisation == True:
             vis = Visualiser(g._list_patches, g.rows(), g.cols(), grid_lines= True)
-            sleep(1)
 
         while ticks < self._max_ticks and len(g._list_cells_living) > 0:
+            print(g._list_cells_living)
+            random.shuffle(g._list_cells_living)
+            temp = []
             for cell in g._list_cells_living:
                 cell.tick(cell.patch())
                 # print(g._list_cells_living)
                 # print(g.rows(), g.cols())
-                g.find_neighbours(cell)
+                
+                temp.append(s.append_neighbors(g.find_neighbours(cell), cell))
+                print("temp list :")
+                print(temp)
 
-                # cell.divide(cell.patch(), g.rows(), g.cols())
+                # cell.divide(cell.patch(), g.find_neighbours(cell))
+
+                # self._list_cells_living.append()
             
             if self._visualisation == True:
-                sleep(1)
+                # sleep(1)
                 vis.update()
             ticks += 1
+            g._list_cells_living.extend(temp)
+            print(ticks)
             # g._list_cells_living.extend(temp)
 
             '''

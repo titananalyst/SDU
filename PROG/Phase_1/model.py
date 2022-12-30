@@ -50,6 +50,7 @@ class Patch:
     
     Preconditions: there is no cell on this patch and the cell is not on another patch
     """
+    print("test")
     assert not self.has_cell(), "This patch has a cell."
     assert cell.patch() is self, "The cell is on another patch."
     self._cell = cell
@@ -83,6 +84,7 @@ class Cell:
     self._alive = True
     # inform patch that this cell is on it
     patch.put_cell(self)
+    
   
   def patch(self:Cell)->Patch:
     """Returns the patch of this cell. If the cell is dead, it returns the patch where the cell died."""

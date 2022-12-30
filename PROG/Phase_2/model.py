@@ -282,37 +282,37 @@ class Cell:
     # print(type(self))
     # print(self.is_alive())
     #Deaths:
-    if self.died_by_age() and self.died_by_division():
-        self._died_by_age +=1
-        self._died_by_division +=1
-        self._died_by_age_division += 1
-        if self.died_by_poisening():
-            self._died_by_poisening +=1
-            self._died_by_age_poisening +=1
-            self._died_by_division_poisening +=1
-            self._died_by_age_division_poisening +=1
-            self.die()
-        self.die()
+    # if self.died_by_age() and self.died_by_division():
+    #     self._died_by_age +=1
+    #     self._died_by_division +=1
+    #     self._died_by_age_division += 1
+    #     if self.died_by_poisening():
+    #         self._died_by_poisening +=1
+    #         self._died_by_age_poisening +=1
+    #         self._died_by_division_poisening +=1
+    #         self._died_by_age_division_poisening +=1
+    #         self.die()
+    #     self.die()
 
-    elif self.died_by_age():
-        self._died_by_age +=1
-        if self.died_by_poisening():
-            self._died_by_poisening +=1
-            self._died_by_age_poisening +=1
-            self.die()
-        self.die()
+    # elif self.died_by_age():
+    #     self._died_by_age +=1
+    #     if self.died_by_poisening():
+    #         self._died_by_poisening +=1
+    #         self._died_by_age_poisening +=1
+    #         self.die()
+    #     self.die()
 
-    elif self.died_by_division():
-        self._died_by_division +=1
-        if self.died_by_poisening():
-            self._died_by_poisening +=1
-            self._died_by_division_poisening +=1
-            self.die()
-        self.die()
+    # elif self.died_by_division():
+    #     self._died_by_division +=1
+    #     if self.died_by_poisening():
+    #         self._died_by_poisening +=1
+    #         self._died_by_division_poisening +=1
+    #         self.die()
+    #     self.die()
 
-    elif self.died_by_poisening():
-        self._died_by_poisening +=1
-        self.die()     
+    # elif self.died_by_poisening():
+    #     self._died_by_poisening +=1
+    #     self.die()     
 
   def find_neighbours(self:Cell, total_rows:int, total_col:int)->list: 
     assert self.is_alive()
@@ -334,7 +334,7 @@ class Cell:
     return neighbors
 
 
-  def divide(self:Cell, patch:CellPatch,  total_rows:int, total_col:int)->bool:
+  def divide(self:Cell, patch:CellPatch, neighbours:list)->bool:
     """Divides this cell using a given patch and returns a booelan if the division 
     was successful. To divide the division probability is used and it is calculated
     by reducing the base division probability by the cell resistance level divided by 20.
@@ -355,30 +355,34 @@ class Cell:
 
         p = self._division_probability - (self.resistance() / 20)
         if random.uniform(0, 1) >= p:
-            if self.find_neighbours(total_rows, total_col) != []:
-                new_patch = random.choice(self.find_neighbours(total_rows, total_col))  
-    
+            if neighbours != []:
+            
+              new_patch = random.choice(neighbours) 
+              print(new_patch, type(new_patch), new_patch.has_cell())
+              
 
-                if self.resistance() == 0:
-                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(0, 2)))
+              if self.resistance() == 0:
+                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(0, 2)))
 
-                if self.resistance() == 1:
-                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(-1, 2)))
-        
-                if self.resistance() == 8:
-                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 1)))
+              if self.resistance() == 1:
+                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(-1, 2)))
+      
+              if self.resistance() == 8:
+                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 1)))
 
-                if self.resistance() == 9:
-                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 0)))
+              if self.resistance() == 9:
+                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 0)))
+              
+              else:
+                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 2))) 
 
-                else:
-                    new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 2))) 
-        
-                new_patch.cell(new_cell)
-                new_patch.put_cell(new_cell)
+              #new_patch.cell(new_cell)
+              #new_patch.put_cell(new_cell)
 
-                self._last_division = 0  # reset the counter from the last division
-                self._divisions = self._divisions + 1
+              self._last_division = 0  # reset the counter from the last division
+              self._divisions = self._divisions + 1
+
+              return new_cell
 
 if __name__ == "__main__":
   import doctest
