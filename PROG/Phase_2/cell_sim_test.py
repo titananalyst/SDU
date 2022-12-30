@@ -150,6 +150,28 @@ class Grid():
             patch = random.choice(temp)  # does not prevent of choosing the same patch twice
             self._list_cells_living.append(Cell(patch, 0))  # initialize resistance 0
 
+    def find_neighbours(self, curr_cell)->list: 
+        assert curr_cell.is_alive()
+        neighbors = []
+
+        for i in range((curr_cell.patch().row()-1) , (curr_cell.patch().row() +2)):
+            for j in range((curr_cell.patch().col()-1) , (curr_cell.patch().col() +2)):
+                # print(i, j) # i% self.rows() ,j% self.cols()
+                neighbors.extend([patch for patch in self._list_patches if patch.row() == (i % self.rows()) and patch.col() == (j % self.cols())])
+
+        for k in neighbors:
+            # print(type(k))
+            if isinstance(k, CellPatch) and k.has_cell() == True:
+                print(k, type(k))
+                neighbors.remove(k)
+                
+            elif isinstance(k, ObstaclePatch) and k.is_obstacle() == True:
+                neighbors.remove(k)
+            else:
+                print(type(k))
+        print(neighbors)
+        return neighbors
+
 
 class Simulation(Grid):
     def __init__(self:Simulation):
@@ -176,9 +198,11 @@ class Simulation(Grid):
         while ticks < self._max_ticks and len(g._list_cells_living) > 0:
             for cell in g._list_cells_living:
                 cell.tick(cell.patch())
-                print(g._list_cells_living)
-                print(g.rows(), g.cols())
-                cell.divide(cell.patch(), g.rows(), g.cols())
+                # print(g._list_cells_living)
+                # print(g.rows(), g.cols())
+                g.find_neighbours(cell)
+
+                # cell.divide(cell.patch(), g.rows(), g.cols())
             
             if self._visualisation == True:
                 sleep(1)

@@ -322,8 +322,8 @@ class Cell:
       for j in range((self.patch().col()-1) , (self.patch().col() +2)):
         # TODO: append patches as neighbours and not just the numbers... rows cols
         print(i, j)
-        print(i% total_rows,j% total_col)
         neighbors.append(BasePatch(i% total_rows,j% total_col))
+    print(neighbors)
 
     for k in neighbors:
         if CellPatch.has_cell(k) == True:
