@@ -320,6 +320,7 @@ class Cell:
         self._died_by_poisoning +=1
         self.die()     
         print("died 7")
+    return self
 
   def divide(self:Cell, patch:CellPatch, neighbours:list)->bool:
     """Divides this cell using a given patch and returns a booelan if the division 
