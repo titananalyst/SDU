@@ -267,12 +267,13 @@ class Cell:
       return False
   
   def died_by_poisoning(self:Cell)->bool:
-    if ((self._patch.toxicity() - self.resistance()) / 100)>0: # this is only true if the resistance i lover than the toxity lvl. 
-      p=(self._patch.toxicity() - self.resistance()) / 100 #sest an probability to die from toxic patch
+    if ((self._patch.toxicity() - self.resistance()) / 10) > 0: # this is only true if the resistance i lower than the toxicity lvl. 
+      p = (self._patch.toxicity() - self.resistance()) / 10 # sest the probability to die from toxic patch
       # prob as described in pdf
+      print(p)
       if p >= round(random.random(), 2):  # random probability for death by poisoning
         return True
-      else: 
+    else: 
         return False
 
 
@@ -342,7 +343,10 @@ class Cell:
     elif self._division_cooldown <= self._last_division:
 
         p = self._division_probability - (self.resistance() / 20)
-        if random.uniform(0, 1) >= p:
+        random_prob = random.uniform(0, 1)
+
+        if random_prob <= p:
+
             if neighbours != []:
             
               new_patch = random.choice(neighbours) 
