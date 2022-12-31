@@ -255,7 +255,7 @@ class Cell:
 
   def died_by_age(self:Cell)->bool:
     """returns if this cell i readynto die by aging"""
-    if self._age>self._age_limit:
+    if self._age > self._age_limit:
       return True
     else:
       return False
@@ -270,7 +270,7 @@ class Cell:
     if ((self._patch.toxicity() - self.resistance()) / 10) > 0: # this is only true if the resistance i lower than the toxicity lvl. 
       p = (self._patch.toxicity() - self.resistance()) / 10 # sest the probability to die from toxic patch
       # prob as described in pdf
-      print(p)
+      # print(p)
       if p >= round(random.random(), 2):  # random probability for death by poisoning
         return True
     else: 
@@ -283,44 +283,55 @@ class Cell:
     # print(type(self))
     # print(self.is_alive())
     #Deaths:
-    if self.died_by_age() and self.died_by_division():
-        self._died_by_age +=1
-        self._died_by_division +=1
-        self._died_by_age_division += 1
-        if self.died_by_poisoning():
-            self._died_by_poisoning +=1
-            self._died_by_age_poisoning +=1
-            self._died_by_division_poisoning +=1
-            self._died_by_age_division_poisoning +=1
-            self.die()
-            print("died 1")
-        self.die()
-        print("died 2")
 
-    elif self.died_by_age():
-        self._died_by_age +=1
-        if self.died_by_poisoning():
-            self._died_by_poisoning +=1
-            self._died_by_age_poisoning +=1
-            self.die()
-            print("died 3")
-        self.die()
-        print("died 4")
-
+    if self.died_by_age():
+      self.die()
     elif self.died_by_division():
-        self._died_by_division +=1
-        if self.died_by_poisoning():
-            self._died_by_poisoning +=1
-            self._died_by_division_poisoning +=1
-            self.die()
-            print("died 5")
-        self.die()
-        print("died 6")
-
+      self.die()
     elif self.died_by_poisoning():
-        self._died_by_poisoning +=1
-        self.die()     
-        print("died 7")
+      self.die()
+
+    return self
+    # if self.died_by_age() and self.died_by_division():
+    #   print("age and division")
+    #   self._died_by_age +=1
+    #   self._died_by_division +=1
+    #   self._died_by_age_division += 1
+    #   if self.died_by_poisoning():
+    #       self._died_by_poisoning +=1
+    #       self._died_by_age_poisoning +=1
+    #       self._died_by_division_poisoning +=1
+    #       self._died_by_age_division_poisoning +=1
+    #       self.die()
+    #       print("died 1")
+    #   self.die()
+    #   print("died 2")
+
+    # elif self.died_by_age():
+    #   self._died_by_age +=1
+    #   if self.died_by_poisoning():
+    #       self._died_by_poisoning +=1
+    #       self._died_by_age_poisoning +=1
+    #       self.die()
+    #       print("died 3")
+    #   self.die()
+    #   print("died 4")
+
+    # elif self.died_by_division():
+    #   self._died_by_division +=1
+    #   if self.died_by_poisoning():
+    #       self._died_by_poisoning +=1
+    #       self._died_by_division_poisoning +=1
+    #       self.die()
+    #       print("died 5")
+    #   self.die()
+    #   print("died 6")
+
+    # elif self.died_by_poisoning():
+
+    #   self._died_by_poisoning +=1
+    #   self.die()     
+    #   print("died 7")
     return self
 
   def divide(self:Cell, patch:CellPatch, neighbours:list)->bool:

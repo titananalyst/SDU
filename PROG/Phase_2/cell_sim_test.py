@@ -39,11 +39,10 @@ class Grid():
         self._grid = []
         self._cells = []
         self._list_grids = []
-        self._strGrid = 'grid_3.txt'
+        self._strGrid = 'grid_2.txt'
         self._grid_data = None
         self._list_patches = []
         self._list_cell_patches = []
-        self._list_cells_living = []
         self._init_pop = 2
         self._intCellPatch = 0
 
@@ -178,7 +177,7 @@ class Grid():
 class Simulation(Grid):
     def __init__(self:Simulation):
         super().__init__()
-        self._max_ticks = 100
+        self._max_ticks = 1000
         self._visualisation = True
         # statistics:
         self._died_by_age = 0
@@ -258,7 +257,7 @@ class Simulation(Grid):
             ticks += 1
             g._cells.extend(temp)
 
-            print(ticks)
+            # print(ticks)
         vis.wait_close()
 
 
