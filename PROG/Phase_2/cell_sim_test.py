@@ -39,12 +39,13 @@ class Grid():
         self._grid = []
         self._cells = []
         self._list_grids = []
-        self._strGrid = 'grid_1.txt'
+        self._strGrid = 'grid_2.txt'
         self._grid_data = None
         self._list_patches = []
         self._list_cell_patches = []
         self._list_cells_living = []
         self._init_pop = 2
+        self._intCellPatch = 0
 
         
     def cols(self:Grid)->int:
@@ -138,6 +139,7 @@ class Grid():
                     temp = CellPatch(base_patch.row(), base_patch.col(), int(col))
                     self._list_patches.append(temp)
                     self._list_cell_patches.append(temp)
+                    self._intCellPatch += 1
 
                 base_patches.pop(0)
 
@@ -146,12 +148,16 @@ class Grid():
         of initial population."""
         temp = [i for i in self._list_patches if isinstance(i, CellPatch)]
 
-        while len(self._list_cells_living) < self._init_pop:
+        if self._init_pop > self._intCellPatch:
+            raise ValueError("Try again and enter a initial population equal or lower than", self._intCellPatch)
+
+        while len(self._cells) < self._init_pop:
             patch = random.choice(temp)  # does not prevent of choosing the same patch twice
-            self._list_cells_living.append(Cell(patch, 0))  # initialize resistance 0
+            self._cells.append(Cell(patch, 0))  # initialize resistance 0
+            temp.remove(patch)  # remove choosen patch to avoid taking the same twice
 
     def find_neighbours(self, curr_cell)->list: 
-        assert curr_cell.is_alive()
+        # assert curr_cell.is_alive()
         neighbors = []
 
         for i in range((curr_cell.patch().row()-1) , (curr_cell.patch().row() +2)):
@@ -162,13 +168,10 @@ class Grid():
                 for k in neighbors:
                     if isinstance(k, CellPatch) and k.has_cell() == True:
                         neighbors.remove(k)
-                        
                     elif isinstance(k, ObstaclePatch):
                         neighbors.remove(k)
-                    
                     else:
                         continue
-
         return neighbors
 
 
@@ -180,103 +183,83 @@ class Simulation(Grid):
         # statistics:
         self._died_by_age = 0
         self._died_by_division = 0
-        self._died_by_poisening = 0 
-        self._died_by_age_division_poisening = 0
+        self._died_by_poisoning = 0 
+        self._died_by_age_division_poisoning = 0
         self._died_by_age_division = 0
-        self._died_by_age_poisening = 0
-        self._died_by_division_poisening = 0
+        self._died_by_age_poisoning = 0
+        self._died_by_division_poisoning = 0
 
-    def append_neighbors(self:Simulation, neighbours:list, curr_cell):
-        if neighbours != []:
+    # def append_neighbors(self:Simulation, neighbours:list, curr_cell):
+    #     if neighbours != []:
         
-            new_patch = random.choice(neighbours) 
-            # print(new_patch, type(new_patch), new_patch.has_cell())
+    #         new_patch = random.choice(neighbours) 
+    #         # print(new_patch, type(new_patch), new_patch.has_cell())
 
-            if curr_cell.resistance() == 0:
-                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(0, 2)))
+    #         if curr_cell.resistance() == 0:
+    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(0, 2)))
 
-            elif curr_cell.resistance() == 1:
-                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-1, 2)))
+    #         elif curr_cell.resistance() == 1:
+    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-1, 2)))
     
-            elif curr_cell.resistance() == 8:
-                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 1)))
+    #         elif curr_cell.resistance() == 8:
+    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 1)))
 
-            elif curr_cell.resistance() == 9:
-                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 0)))
+    #         elif curr_cell.resistance() == 9:
+    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 0)))
             
-            else:
-                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 2))) 
-
-            # print(new_cell, type(new_cell))
-            return new_cell
-
-        # if neighbours == []:
-        #     print("neighbours list is empty")
-
+    #         else:
+    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 2))) 
+    #         # print(new_cell, type(new_cell))
+    #         return new_cell
+    #     # if neighbours == []:
+    #     #     print("neighbours list is empty")
 
     def start(self:Simulation):
         ticks = 0
         if self._visualisation == True:
             vis = Visualiser(g._list_patches, g.rows(), g.cols(), grid_lines= True)
 
-        while ticks < self._max_ticks and len(g._list_cells_living) > 0:
-            # print(g._list_cells_living)
-            random.shuffle(g._list_cells_living)
+        while ticks < self._max_ticks and len(g._cells) > 0:
+            # print(g._cells)
+            random.shuffle(g._cells)
             temp = []
-            for cell in g._list_cells_living:
-                cell.tick()
-                # print(g._list_cells_living)
+            for cell in g._cells:
+                # print(cell, type(cell))
+                # print(cell.is_alive())
+                # print("before", len(g._cells))
+                # print(g._cells)
                 # print(g.rows(), g.cols())
-                
-                temp.append(s.append_neighbors(g.find_neighbours(cell), cell))
+
+                new_cell = cell.divide(cell.patch(), g.find_neighbours(cell))
+                temp.append(new_cell)
+                #temp.append(s.append_neighbors(g.find_neighbours(cell), cell))
                 temp = [i for i in temp if i is not None]
+                temp = [i for i in temp if i is not False]
+                
+                cell.tick()
+                if cell.died_by_age():
+                    g._cells.remove(cell)
+                    self._died_by_age += 1
+                elif cell.died_by_division():
+                    g._cells.remove(cell)
+                    self._died_by_division += 1
+                elif cell.died_by_poisoning():
+                    g._cells.remove(cell)
+                    self._died_by_poisoning += 1
+                elif not cell.is_alive():  # rmeove any dead cells
+                    g._cells.remove(cell)
 
-                # cell.divide(cell.patch(), g.find_neighbours(cell))
-
-                # self._list_cells_living.append()
+                
+                # print("after", len(g._cells))
             
             if self._visualisation == True:
                 # sleep(0.2)
                 vis.update()
             ticks += 1
-            g._list_cells_living.extend(temp)
+            g._cells.extend(temp)
+
             print(ticks)
-            # g._list_cells_living.extend(temp)
-
-            '''
-            #Deaths:
-            if self.died_by_age and Cell.died_by_division:
-                self._died_by_age +=1
-                self._died_by_division +=1
-                self._died_by_age_division += 1
-                if self.died_by_poisening:
-                    self._died_by_poisening +=1
-                    self._died_by_age_poisening +=1
-                    self._died_by_division_poisening +=1
-                    self._died_by_age_division_poisening +=1
-                    self.die
-                self.die
-
-            elif self.died_by_age:
-                self._died_by_age +=1
-                if self.died_by_poisening:
-                    self._died_by_poisening +=1
-                    self._died_by_age_poisening +=1
-                    self.die
-                self.die
-
-            elif self.died_by_division:
-                self._died_by_division +=1
-                if self.died_by_poisening:
-                    self._died_by_poisening +=1
-                    self._died_by_division_poisening +=1
-                    self.die
-                self.die
-
-            elif self.died_by_poisening:
-                self._died_by_poisening +=1
-                self.die
-            '''
+        vis.wait_close()
 
 
 

@@ -206,11 +206,11 @@ class Cell:
     #statistics:
     self._died_by_age = 0
     self._died_by_division = 0
-    self._died_by_poisening = 0 
-    self._died_by_age_division_poisening = 0
+    self._died_by_poisoning = 0 
+    self._died_by_age_division_poisoning = 0
     self._died_by_age_division = 0
-    self._died_by_age_poisening = 0
-    self._died_by_division_poisening = 0
+    self._died_by_age_poisoning = 0
+    self._died_by_division_poisoning = 0
   
   def resistance(self:Cell)->int:  # new Phase_2
     """Returns the resistance level of this cell."""
@@ -266,7 +266,7 @@ class Cell:
     else:
       return False
   
-  def died_by_poisening(self:Cell)->bool:
+  def died_by_poisoning(self:Cell)->bool:
     if ((self._patch.toxicity() - self.resistance()) / 100)>0: # this is only true if the resistance i lover than the toxity lvl. 
       p=(self._patch.toxicity() - self.resistance()) / 100 #sest an probability to die from toxic patch
       # prob as described in pdf
@@ -282,38 +282,44 @@ class Cell:
     # print(type(self))
     # print(self.is_alive())
     #Deaths:
-    # if self.died_by_age() and self.died_by_division():
-    #     self._died_by_age +=1
-    #     self._died_by_division +=1
-    #     self._died_by_age_division += 1
-    #     if self.died_by_poisening():
-    #         self._died_by_poisening +=1
-    #         self._died_by_age_poisening +=1
-    #         self._died_by_division_poisening +=1
-    #         self._died_by_age_division_poisening +=1
-    #         self.die()
-    #     self.die()
+    if self.died_by_age() and self.died_by_division():
+        self._died_by_age +=1
+        self._died_by_division +=1
+        self._died_by_age_division += 1
+        if self.died_by_poisoning():
+            self._died_by_poisoning +=1
+            self._died_by_age_poisoning +=1
+            self._died_by_division_poisoning +=1
+            self._died_by_age_division_poisoning +=1
+            self.die()
+            print("died 1")
+        self.die()
+        print("died 2")
 
-    # elif self.died_by_age():
-    #     self._died_by_age +=1
-    #     if self.died_by_poisening():
-    #         self._died_by_poisening +=1
-    #         self._died_by_age_poisening +=1
-    #         self.die()
-    #     self.die()
+    elif self.died_by_age():
+        self._died_by_age +=1
+        if self.died_by_poisoning():
+            self._died_by_poisoning +=1
+            self._died_by_age_poisoning +=1
+            self.die()
+            print("died 3")
+        self.die()
+        print("died 4")
 
-    # elif self.died_by_division():
-    #     self._died_by_division +=1
-    #     if self.died_by_poisening():
-    #         self._died_by_poisening +=1
-    #         self._died_by_division_poisening +=1
-    #         self.die()
-    #     self.die()
+    elif self.died_by_division():
+        self._died_by_division +=1
+        if self.died_by_poisoning():
+            self._died_by_poisoning +=1
+            self._died_by_division_poisoning +=1
+            self.die()
+            print("died 5")
+        self.die()
+        print("died 6")
 
-    # elif self.died_by_poisening():
-    #     self._died_by_poisening +=1
-    #     self.die()     
-
+    elif self.died_by_poisoning():
+        self._died_by_poisoning +=1
+        self.die()     
+        print("died 7")
 
   def divide(self:Cell, patch:CellPatch, neighbours:list)->bool:
     """Divides this cell using a given patch and returns a booelan if the division 
@@ -339,23 +345,23 @@ class Cell:
             if neighbours != []:
             
               new_patch = random.choice(neighbours) 
-              print(new_patch, type(new_patch), new_patch.has_cell())
+              # print(new_patch, type(new_patch), new_patch.has_cell())
               
 
-              if self.resistance() == 0:
-                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(0, 2)))
+              if patch.cell().resistance() == 0:
+                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(0, 2)))
 
-              if self.resistance() == 1:
-                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(-1, 2)))
+              elif patch.cell().resistance() == 1:
+                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-1, 2)))
       
-              if self.resistance() == 8:
-                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 1)))
+              elif patch.cell().resistance() == 8:
+                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 1)))
 
-              if self.resistance() == 9:
-                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 0)))
+              elif patch.cell().resistance() == 9:
+                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 0)))
               
               else:
-                  new_cell = Cell(new_patch, self.resistance() + int(random.randint(-2, 2))) 
+                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 2))) 
 
               #new_patch.cell(new_cell)
               #new_patch.put_cell(new_cell)
