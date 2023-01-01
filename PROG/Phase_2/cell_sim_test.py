@@ -83,15 +83,13 @@ class Grid():
         ValueError: colums are not equal
 
         """
-        # check that all lines contain % or int and not other letters
+        # check that all lines contain % or int and not other letters or characters
+        # done with regex (regular expressions)
         for element in self._grid_data:
             for character in element:
                 pattern = r'^[0-9%]*$'
                 if not re.match(pattern, character):
-                    raise ValueError("This line contains invalid characters: ", element)
-                    # print("This line contains invalid characters: ", element)
-                    # return False 
-        # TODO: also check special characters! now just numbers letters and "%"
+                    raise ValueError("This line contains invalid characters: ", element, character)
 
         # Check if any element has a different length
         first_length = len(self._grid_data[0])
@@ -99,8 +97,6 @@ class Grid():
             print("all columns equal")
         else:
             raise ValueError("colums are not equal")
-            # print("colums are not equal")
-            # return False
 
         # check if rows are bigger than 3
         if len(self._grid_data) >= 3:
@@ -108,8 +104,6 @@ class Grid():
             self._rows = len(self._grid_data)
         else:
             raise ValueError("therea re not enough rows")
-            # print("there are not enough rows")
-            # return False
 
         # check if colums are bigger than 3
         if all(len(element) >= 3 for element in self._grid_data):
@@ -117,9 +111,6 @@ class Grid():
             self._cols = len(self._grid_data[0])
         else:
             raise ValueError("there are not enough cols")
-            # print("there are not enough cols")
-            # return False
-
 
     def initialize_grid(self):
         """Return a list of BasePatches with the size of the input grid and
