@@ -15,6 +15,7 @@ import random
 from random import randint, choice
 from time import sleep
 import os
+import re
 
 # TODO: make a loader DONE
 # TODO: make a checker for the loaded grid validity DONE
@@ -39,7 +40,7 @@ class Grid():
         self._grid = []
         self._cells = []
         self._list_grids = []
-        self._strGrid = 'grid_2.txt'
+        self._strGrid = 'grid_1.txt'
         self._grid_data = None
         self._list_patches = []
         self._list_cell_patches = []
@@ -85,7 +86,8 @@ class Grid():
         # check that all lines contain % or int and not other letters
         for element in self._grid_data:
             for character in element:
-                if character != '%' and not isinstance(int(character), int):
+                pattern = r'^[0-9%]*$'
+                if not re.match(pattern, character):
                     raise ValueError("This line contains invalid characters: ", element)
                     # print("This line contains invalid characters: ", element)
                     # return False 
@@ -186,32 +188,7 @@ class Simulation(Grid):
         self._died_by_age_division_poisoning = 0
         self._died_by_age_division = 0
         self._died_by_age_poisoning = 0
-        self._died_by_division_poisoning = 0
-
-    # def append_neighbors(self:Simulation, neighbours:list, curr_cell):
-    #     if neighbours != []:
-        
-    #         new_patch = random.choice(neighbours) 
-    #         # print(new_patch, type(new_patch), new_patch.has_cell())
-
-    #         if curr_cell.resistance() == 0:
-    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(0, 2)))
-
-    #         elif curr_cell.resistance() == 1:
-    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-1, 2)))
-    
-    #         elif curr_cell.resistance() == 8:
-    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 1)))
-
-    #         elif curr_cell.resistance() == 9:
-    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 0)))
-            
-    #         else:
-    #             new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 2))) 
-    #         # print(new_cell, type(new_cell))
-    #         return new_cell
-    #     # if neighbours == []:
-    #     #     print("neighbours list is empty")
+        self._died_by_division_poisoning = 0 
 
     def start(self:Simulation):
         ticks = 0
