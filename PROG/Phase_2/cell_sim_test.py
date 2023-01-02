@@ -170,7 +170,7 @@ class Grid():
 class Simulation(Grid):
     def __init__(self:Simulation):
         super().__init__()
-        self._max_ticks = 1000
+        self._max_ticks = 100
         self._visualisation = True
         # statistics:
         self._died_by_age = 0
@@ -204,20 +204,23 @@ class Simulation(Grid):
                 temp = [i for i in temp if i is not False]
                 
                 cell.tick()
-                if cell.died_by_age():
+                if cell.died_by_age() and cell.died_by_division():
+                    cell.patch().remove_cell()
+                    g._cells.remove(cell)
+                    self._died_by_age_division += 1
+                elif cell.died_by_age():
                     g._cells.remove(cell)
                     self._died_by_age += 1
                 elif cell.died_by_division():
                     g._cells.remove(cell)
                     self._died_by_division += 1
-                elif cell.died_by_poisoning():
+                # elif cell.died_by_poisoning():
+                #     g._cells.remove(cell)
+                #     self._died_by_poisoning += 1
+                elif not cell.is_alive():  # remove poisoing dead cells
                     g._cells.remove(cell)
                     self._died_by_poisoning += 1
-                elif not cell.is_alive():  # rmeove any dead cells
-                    g._cells.remove(cell)
 
-                
-                # print("after", len(g._cells))
             
             if self._visualisation == True:
                 # sleep(0.2)
@@ -226,6 +229,10 @@ class Simulation(Grid):
             g._cells.extend(temp)
 
             # print(ticks)
+        print(self._died_by_age_division)
+        print(self._died_by_age)
+        print(self._died_by_division)
+        print(self._died_by_poisoning)
         vis.wait_close()
 
 

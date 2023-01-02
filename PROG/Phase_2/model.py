@@ -284,7 +284,9 @@ class Cell:
     # print(self.is_alive())
     #Deaths:
 
-    if self.died_by_age():
+    if self.died_by_age() and self.died_by_division():
+      self.die()
+    elif self.died_by_age():
       self.die()
     elif self.died_by_division():
       self.die()

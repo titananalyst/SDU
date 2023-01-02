@@ -9,7 +9,7 @@
 @Author  :   Jonas Keller
 '''
 
-from cell_sim import Grid, Simulation
+from cell_sim_test import Grid, Simulation
 from time import sleep
 from sys import exit
 
