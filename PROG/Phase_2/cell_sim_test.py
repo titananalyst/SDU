@@ -12,14 +12,10 @@ from __future__ import annotations # to use a class in type hints of its members
 from model import BasePatch, ObstaclePatch, CellPatch, Cell
 from visualiser import Visualiser
 import random
-from random import randint, choice
-from time import sleep
 import os
 import re
 import matplotlib.pyplot as plt
 
-
-# TODO: import menu.py and run menu in cell_sim.py
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -161,7 +157,6 @@ class Grid():
     def set_parent(self, curr_cell, neighbours):
         if neighbours != []:
             new_patch = random.choice(neighbours) 
-            # print(new_patch, type(new_patch), new_patch.has_cell())
 
             if curr_cell.resistance() == 0:
                 new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(0, 2)))
@@ -182,13 +177,10 @@ class Grid():
             curr_cell._divisions = curr_cell._divisions + 1
 
             if isinstance(new_cell, Cell):
-                # print(type(new_cell))
                 new_cell._parent = curr_cell
                 new_cell._generation = new_cell.parent().generation() + 1
 
                 return new_cell
-            
-        
 
     def reset_grid(self):
         '''This method resets the list for the patches and cells'''
@@ -206,7 +198,6 @@ class Grid():
         self._list_patches = []
         self._list_cell_patches = []
         self._intCellPatch = 0
-
 
 
 class Simulation(Grid):
@@ -230,10 +221,13 @@ class Simulation(Grid):
         self._died_by_age_division = 0
         self._tot_cells = 0
         self._tot_died = 0
+        self._tot_died_by_age = 0
+        self._tot_died_by_division = 0
 
     def start(self:Simulation):
         print('\nSimulation is running ...')
         self.reset_graph()  # reset data structures for the graphs
+        self.reset_stats()  # reset structures for the statistics
         ticks = 0
         if self._visualisation == True:
             vis = Visualiser(self.grid._list_patches, self.grid.rows(), self.grid.cols(), grid_lines= True)
@@ -257,7 +251,6 @@ class Simulation(Grid):
                             self._dictGen[new_cell.generation()] = []
                             self._dictGen[new_cell.generation()].append(new_cell.resistance())
 
-
                 cell.tick()
                 if cell.died_by_age() and cell.died_by_division():
                     cell.patch().remove_cell()
@@ -279,20 +272,41 @@ class Simulation(Grid):
             ticks += 1
             self.grid._cells.extend(temp)
 
-        # self._tot_cells = self._tot_cells + self.grid
+        self._tot_cells = self._tot_cells + self.grid._init_pop
+        self._tot_died = self._died_by_age + self._died_by_age_division + self._died_by_division + self._died_by_poisoning
+        self._tot_died_by_age = self._died_by_age_division + self._died_by_age
+        self._tot_died_by_division = self._died_by_age_division + self._died_by_division
         self.grid.reset_grid()
-        self.reset_stats()
+        
         if self._visualisation == True:
             print("Simulation finished, please close the window in order to do call the menu.")
             vis.wait_close()
         else:
             print("Simulation finished, because all the cells died already.")
 
+    def statistics(self):
+        '''This method prints the statistics for a simulation'''
+        print("Statistics")
+        print(' - Duration (ticks) {:>12}'.format(self._max_ticks))
+        print(' - Total cells {:>17}'.format(self._tot_cells))
+        print(' - Total deaths {:>16}'.format(self._tot_died))
+        print(' - Cause of death')
+        print('   - Age & Division limit {:>6}'.format(self._died_by_age_division))
+        print('   - Age limit {:>17}'.format(self._died_by_age))
+        print('   - Division limit {:>12}'.format(self._died_by_division))
+        print('   - Poisoning {:>17}'.format(self._died_by_poisoning))
+        print('\n')
+        print('Statistics printed.')
+
     def reset_stats(self):
         self._died_by_age = 0
         self._died_by_division = 0
         self._died_by_poisoning = 0 
         self._died_by_age_division = 0
+        self._tot_cells = 0
+        self._tot_died = 0
+        self._tot_died_by_age = 0
+        self._tot_died_by_division = 0
 
     def reset_graph(self):
         self._dictGen = {}
@@ -303,20 +317,6 @@ class Simulation(Grid):
             "max_res": [],
             "avg_res": []
         }
-
-    def statistics(self):
-        '''This method prints the statistics for a simulation'''
-        print("Statistics")
-        print(' - Duration (ticks) {:>7}'.format(self._max_ticks))
-        print(' - Total cells {:>12}'.format(self.tot_cells))
-        print(' - Total deaths {:>11}'.format(self.tot_deaths))
-        print(' - Cause of death')
-        print('   - Age limit {:>12}'.format(self.age_limit))
-        print('   - Division limit {:>7}'.format(self.div_limit))
-        print('   - Overcrowding {:>9}'.format(self.overcrowding))
-        print('\n')
-        print('Statistics printed.')
-
 
 
 class Menu(Simulation):
@@ -367,44 +367,22 @@ class Menu(Simulation):
         self.sim.grid.reset_data()
 
     def graph_data(self):
-        for i in self.sim._dictGen:
-            gen = i
-            intIndividuals = len(self.sim._dictGen[i])
-            min_res = min(self.sim._dictGen[i])
-            max_res = max(self.sim._dictGen[i])
-            avg_res = (round(sum(self.sim._dictGen[i])/len(self.sim._dictGen[i]), 2))
-            
-            self.sim._dictResults['Generation'].append(gen)
-            self.sim._dictResults['intIndividuals'].append(intIndividuals)
-            self.sim._dictResults['min_res'].append(min_res)
-            self.sim._dictResults['max_res'].append(max_res)
-            self.sim._dictResults['avg_res'].append(avg_res)            
-            
-        print(self.sim._dictResults)
+        if self.sim._dictGen != {}:
+            for i in self.sim._dictGen:
+                gen = i
+                intIndividuals = len(self.sim._dictGen[i])
+                min_res = min(self.sim._dictGen[i])
+                max_res = max(self.sim._dictGen[i])
+                avg_res = (round(sum(self.sim._dictGen[i])/len(self.sim._dictGen[i]), 2))
+                
+                self.sim._dictResults['Generation'].append(gen)
+                self.sim._dictResults['intIndividuals'].append(intIndividuals)
+                self.sim._dictResults['min_res'].append(min_res)
+                self.sim._dictResults['max_res'].append(max_res)
+                self.sim._dictResults['avg_res'].append(avg_res)         
+        else:
+            raise Exception("There is no data, run a simulation first.")
 
-    def figure1(self):
-        gen = self.sim._dictResults['Generation']
-        individuals = self.sim._dictResults['intIndividuals']
-
-        plt.plot(gen, individuals)
-        plt.title('Individuals over genereations')
-        plt.xlabel('Generation')
-        plt.ylabel('Individuals')
-        plt.show()
-
-    def figure2(self):
-        gen = self.sim._dictResults['Generation']
-        min_res =self.sim._dictResults['min_res']
-        max_res =self.sim._dictResults['max_res']
-        avg_res = self.sim._dictResults['avg_res']
-        
-        plt.plot(gen, max_res, "tab:orange", label = "Max")
-        plt.plot(gen, avg_res, "-g", label = "Avg")
-        plt.plot(gen, min_res, "-b", label= "Min")
-        
-        plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode= "expand", borderaxespad = 0, ncol = 3)
-        plt.show()
-        
     def figure(self):
         gen = self.sim._dictResults['Generation']
         individuals = self.sim._dictResults['intIndividuals']
@@ -428,8 +406,10 @@ class Menu(Simulation):
         ax1.set_ylabel("Resistance level")
         ax1.set_title("Generations vs. Resistance")
         
-        ax1.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", mode= "expand", borderaxespad = 0)
+        ax1.legend(bbox_to_anchor=(1.14, 0.5), loc="center", borderaxespad = 0)
+        fig.tight_layout()
         fig.show()
+
 
     def print_menu(self):
         '''
@@ -443,7 +423,7 @@ class Menu(Simulation):
         print("3: Run simulation")
         print("4: Reset to default setup")
         print("5: Visualisation ON/OFF")
-        print("6. Display graphs")
+        print("6. Graphs & Statistics")
         print("7: Quit")
         print()
         self._menu_choice = int(input("Type in a number (1-7): "))
@@ -489,13 +469,12 @@ class Menu(Simulation):
             self.print_menu()
 
         elif self._menu_choice == 3:
-            print(self.sim.grid._strGrid)
             self.sim.grid.loader()
             self.sim.grid.checker()
             self.sim.grid.initialize_grid()
             self.sim.grid.init_pop()
             self.sim.start()
-            
+            self.graph_data()
             self.print_menu()
 
         elif self._menu_choice == 4:
@@ -503,6 +482,7 @@ class Menu(Simulation):
             self.sim.grid._init_pop = 2
             self.sim._max_ticks = 100
             self.sim._visualisation = True
+            print("Settings reset to default settings.\n")
             self.print_menu()
 
         elif self._menu_choice == 5:
@@ -517,34 +497,13 @@ class Menu(Simulation):
             self.print_menu()
 
         elif self._menu_choice == 6:
-            self.graph_data()
             self.figure()
+            self.sim.statistics()
             self.print_menu()
 
         elif self._menu_choice == 7:
             quit()
 
-        elif self._menu_choice == 33:
-            self.graph_data()
-            self.print_menu()
-
-        elif self._menu_choice == 34:
-            self.figure1()
-            self.print_menu()
-
-        elif self._menu_choice == 35:
-            self.figure2()
-            self.print_menu()
-
-        elif self._menu_choice == 36:
-            self.figure3()
-            self.print_menu()
-            
-
-
-
-
-        
 
 if __name__ == "__main__":
     # docstest

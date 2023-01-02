@@ -149,15 +149,6 @@ class Cell:
     # inform patch that this cell is on it
     patch.put_cell(self)
 
-    #statistics:
-    self._died_by_age = 0
-    self._died_by_division = 0
-    self._died_by_poisoning = 0 
-    self._died_by_age_division_poisoning = 0
-    self._died_by_age_division = 0
-    self._died_by_age_poisoning = 0
-    self._died_by_division_poisoning = 0
-  
   def resistance(self:Cell)->int:  # new Phase_2
     """Returns the resistance level of this cell."""
     return self._resistance_level
@@ -257,7 +248,7 @@ class Cell:
     
     
     if self._division_cooldown > self._last_division:
-      pass
+      return False
     
     elif self._division_cooldown <= self._last_division:
       p = self._division_probability - (self.resistance() / 20)
@@ -265,6 +256,7 @@ class Cell:
 
       if random_prob <= p:
         return True
+
 
 
 if __name__ == "__main__":
