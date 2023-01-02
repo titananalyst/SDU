@@ -281,8 +281,6 @@ class Simulation(Grid):
         if self._visualisation == True:
             print("Simulation finished, please close the window in order to do call the menu.")
             vis.wait_close()
-        else:
-            print("Simulation finished, because all the cells died already.")
 
     def statistics(self):
         '''This method prints the statistics for a simulation'''
