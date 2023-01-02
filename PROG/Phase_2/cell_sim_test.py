@@ -17,15 +17,8 @@ from time import sleep
 import os
 import re
 
-# TODO: make a loader DONE
-# TODO: make a checker for the loaded grid validity DONE
-# TODO: make it possible to list dir to chose a different grid to load DONE
-# TODO: make function find neighbors of cells and implement the list of free neighbors
-#       in the same function by popping the obstacles and have cells out.
-# TODO: constaint of initialization population for row x col - obstacle patches
-# TODO: count the number of CellPatches in initialize_grid
+
 # TODO: import menu.py and run menu in cell_sim.py
-# TODO:
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -34,7 +27,6 @@ os.chdir(dname)
 
 class Grid():
     def __init__(self:Grid):
-        # TODO: add the functions as methods, global variables as attributes
         self._cols = 0
         self._rows = 0
         self._grid = []
@@ -149,12 +141,10 @@ class Grid():
             temp.remove(patch)  # remove choosen patch to avoid taking the same twice
 
     def find_neighbours(self, curr_cell)->list: 
-        # assert curr_cell.is_alive()
         neighbors = []
 
         for i in range((curr_cell.patch().row()-1) , (curr_cell.patch().row() +2)):
             for j in range((curr_cell.patch().col()-1) , (curr_cell.patch().col() +2)):
-                # print(i, j) # i% self.rows() ,j% self.cols()
                 neighbors.extend([patch for patch in self._list_patches if patch.row() == (i % self.rows()) and patch.col() == (j % self.cols())])
 
                 for k in neighbors:
@@ -187,15 +177,9 @@ class Simulation(Grid):
             vis = Visualiser(g._list_patches, g.rows(), g.cols(), grid_lines= True)
 
         while ticks < self._max_ticks and len(g._cells) > 0:
-            # print(g._cells)
             random.shuffle(g._cells)
             temp = []
             for cell in g._cells:
-                # print(cell, type(cell))
-                # print(cell.is_alive())
-                # print("before", len(g._cells))
-                # print(g._cells)
-                # print(g.rows(), g.cols())
 
                 new_cell = cell.divide(cell.patch(), g.find_neighbours(cell))
                 temp.append(new_cell)
@@ -223,12 +207,10 @@ class Simulation(Grid):
 
             
             if self._visualisation == True:
-                # sleep(0.2)
                 vis.update()
             ticks += 1
             g._cells.extend(temp)
 
-            # print(ticks)
         print(self._died_by_age_division)
         print(self._died_by_age)
         print(self._died_by_division)
@@ -236,22 +218,110 @@ class Simulation(Grid):
         vis.wait_close()
 
 
+class Menu(Simulation):
+    def __init__(self):
+        super().__init__()
+        self.grid = Grid()
+        self.sim = Simulation()
+        self._vis_status = True
+        self._sim_status = "Default"
+        self._menu_choice = 1
+
+    def grid_menu(self):
+        
+        self.grid.list_grids()
+        print("The following grids are in your folder, which one do you want to use?")
+        print("Type in the number of the grid:")
+        for i in range(len(self.grid._list_grids)):
+            print(i+1, self.grid._list_grids[i])
+
+        length = len(self.grid._list_grids)
+        if length != 0:
+            choice = int(input('Type in a your number between 0 and {} : '.format(length)))
+            self.grid._strGrid = self.grid._list_grids[choice - 1]
+            print("Choosen:", self.grid._strGrid)
+
+        else: 
+            raise IndexError('There are no grids available in the folder.')
+
+        
+
+    def print_menu(self):
+        '''
+        this print out the display of the menu, 
+        where all the print-statements exicute one line at a time. 
+        '''
+        print("\nMenu:")
+        print(34 * "-")
+        print("1: Display configuration")
+        print("2: Setup")
+        print("3: Run simulation")
+        print("4: Reset to default setup")
+        print("5: Quit")
+        print()
+        self._menu_choice = int(input("Type in a number (1-5): "))
+
+        if self._menu_choice == 1:
+            if self.sim._visualisation == False:
+                self._vis_status = "Disabled"
+            '''
+            this print out the display confuration menu, 
+            with the parametres there has been chosen.
+            '''
+            print("\n" + 34 * "-")
+            print("{:<22} {}".format("Parameter", self._sim_status))
+            print(34 * "-")
+            print("{:<22} {}".format("Active grid", self.grid._strGrid))
+            print("{:<22} {}".format("Initial population", self.sim._init_pop))
+            print("{:<22} {}".format("Age limit", 10))
+            print("{:<22} {}".format("Division limit", 7))
+            print("{:<22} {}".format("Division probability", 0.6))
+            print("{:<22} {}".format("Division cooldown", 1))
+            print("{:<22} {}".format("Time limit", self.sim._max_ticks))
+            print("{:<22} {}\n".format("Visualisation", self._vis_status))
+            self.print_menu()
+
+        elif self._menu_choice == 2:
+            '''
+            this is a go through of the setting in Qick menu. 
+            exaple 1:
+            age_input is set to be an integere with the code int(). 
+            Inside int there is a code input() witch make the user avalible to make its own choice,
+            but that is restricted by the int().
+            That is why there is a messege inside the input() that the user will get. 
+            if the user select correctly the first if statement will be exicuted. 
+            inside that if there i a logical statement that checks if the user has made an valid choice.
+            if not the else statement will print, the "Default" are enabled and then return the user to the menue.
+            '''
+
+            self.simulation = "Setup"
+            self.grid_menu()
+            
+
+
+            self.print_menu()
+
+        
 
 if __name__ == "__main__":
     # docstest
     # import doctest
     # doctest.testmod()
 
-    # oop
-    g = Grid()
-    # print(g.list_grids())  # access to all grids in the directory
-    g.loader()  # loads the grid of the desired grid.txt file
-    g.checker()  # checks the grid input about errors
-    g.initialize_grid() # initializes the grid
-    g.init_pop()  # initializes living cells on the grid
+    m = Menu()
+    m.print_menu()
 
-    s = Simulation()
-    s.start() # starts the simulation
+    # oop
+    # g = Grid()
+    # # print(g.list_grids())  # access to all grids in the directory
+    # g.loader()  # loads the grid of the desired grid.txt file
+    # print(g._list_grids) # access to all grids in)
+    # g.checker()  # checks the grid input about errors
+    # g.initialize_grid() # initializes the grid
+    # g.init_pop()  # initializes living cells on the grid
+
+    # s = Simulation()
+    # s.start() # starts the simulation
 
     # vis = Visualiser(g.list_patches(), g.rows(), g.cols(), grid_lines=True)
     # vis.wait_close()
