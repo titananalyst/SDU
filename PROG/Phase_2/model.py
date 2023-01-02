@@ -296,7 +296,7 @@ class Cell:
     return self
 
 
-  def divide(self:Cell, patch:CellPatch, neighbours:list)->bool:
+  def divide(self:Cell, patch:CellPatch)->bool:
     """Divides this cell using a given patch and returns a booelan if the division 
     was successful. To divide the division probability is used and it is calculated
     by reducing the base division probability by the cell resistance level divided by 20.
@@ -311,40 +311,49 @@ class Cell:
     
     
     if self._division_cooldown > self._last_division:
-      return False
+      pass
     
     elif self._division_cooldown <= self._last_division:
+      p = self._division_probability - (self.resistance() / 20)
+      random_prob = random.uniform(0, 1)
 
-        p = self._division_probability - (self.resistance() / 20)
-        random_prob = random.uniform(0, 1)
+      if random_prob <= p:
+        return True
+        # if neighbours != []:
 
-        if random_prob <= p:
+        #   new_patch = random.choice(neighbours) 
+        #   # print(new_patch, type(new_patch), new_patch.has_cell())
+          
 
-            if neighbours != []:
-            
-              new_patch = random.choice(neighbours) 
-              # print(new_patch, type(new_patch), new_patch.has_cell())
-              
+        #   if patch.cell().resistance() == 0:
+        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(0, 2)))
 
-              if patch.cell().resistance() == 0:
-                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(0, 2)))
+        #   elif patch.cell().resistance() == 1:
+        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-1, 2)))
+  
+        #   elif patch.cell().resistance() == 8:
+        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 1)))
 
-              elif patch.cell().resistance() == 1:
-                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-1, 2)))
-      
-              elif patch.cell().resistance() == 8:
-                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 1)))
+        #   elif patch.cell().resistance() == 9:
+        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 0)))
+          
+        #   else:
+        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 2))) 
 
-              elif patch.cell().resistance() == 9:
-                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 0)))
-              
-              else:
-                  new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 2))) 
+        #   self._last_division = 0  # reset the counter from the last division
+        #   self._divisions = self._divisions + 1
 
-              self._last_division = 0  # reset the counter from the last division
-              self._divisions = self._divisions + 1
+        #   if isinstance(new_cell, Cell):
+        #     print(type(new_cell))
+        #     new_cell._parent = self
+        #     new_cell._generation = new_cell.parent().generation() + 1
 
-              return new_cell
+        #     return new_cell
+    #       pass
+    #     pass
+    #   pass
+    # pass
+
 
 if __name__ == "__main__":
   import doctest

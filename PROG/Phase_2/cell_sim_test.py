@@ -157,6 +157,38 @@ class Grid():
                         continue
         return neighbors
 
+    def set_parent(self, curr_cell, neighbours):
+        if neighbours != []:
+            new_patch = random.choice(neighbours) 
+            # print(new_patch, type(new_patch), new_patch.has_cell())
+
+            if curr_cell.resistance() == 0:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(0, 2)))
+
+            elif curr_cell.resistance() == 1:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-1, 2)))
+    
+            elif curr_cell.resistance() == 8:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 1)))
+
+            elif curr_cell.resistance() == 9:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 0)))
+            
+            else:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 2))) 
+
+            curr_cell._last_division = 0  # reset the counter from the last division
+            curr_cell._divisions = curr_cell._divisions + 1
+
+            if isinstance(new_cell, Cell):
+                # print(type(new_cell))
+                new_cell._parent = curr_cell
+                new_cell._generation = new_cell.parent().generation() + 1
+
+                return new_cell
+            
+        
+
     def reset_grid(self):
         '''This method resets the list for the patches and cells'''
         self._list_patches = []
@@ -200,12 +232,16 @@ class Simulation(Grid):
             random.shuffle(self.grid._cells)
             temp = []
             for cell in self.grid._cells:
+                # print(self.grid._cells)
 
-                new_cell = cell.divide(cell.patch(), self.grid.find_neighbours(cell))
-                temp.append(new_cell)
+                if cell.divide(cell.patch()):
+                    new_cell = self.grid.set_parent(cell, self.grid.find_neighbours(cell))
+                    if isinstance(new_cell, Cell):
+                        temp.append(new_cell)   
+                
                 #temp.append(s.append_neighbors(g.find_neighbours(cell), cell))
-                temp = [i for i in temp if i is not None]
-                temp = [i for i in temp if i is not False]
+                # temp = [i for i in temp if i is not None]
+                # temp = [i for i in temp if i is not False]
                 
                 cell.tick()
                 if cell.died_by_age() and cell.died_by_division():
@@ -224,7 +260,7 @@ class Simulation(Grid):
                 elif not cell.is_alive():  # remove poisoning dead cells
                     self.grid._cells.remove(cell)
                     self._died_by_poisoning += 1
-
+                print(cell.generation())
             
             if self._visualisation == True:
                 vis.update()
@@ -297,7 +333,7 @@ class Menu(Simulation):
         else:
             raise ValueError("Please enter a duration greater than 0")
 
-        self.sim.grid.reset()
+        self.sim.grid.reset_data()
         
 
     def print_menu(self):
@@ -314,7 +350,7 @@ class Menu(Simulation):
         print("5: Visualisation ON/OFF")
         print("6: Quit")
         print()
-        self._menu_choice = int(input("Type in a number (1-5): "))
+        self._menu_choice = int(input("Type in a number (1-6): "))
 
         if self._menu_choice == 1:
             if self.sim._visualisation == False:
