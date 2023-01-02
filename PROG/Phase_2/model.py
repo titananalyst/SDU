@@ -186,7 +186,7 @@ class Cell:
       The patch that will contain this cell (added automatically). The patch must be free.
     """
     self._age_limit = 10  # new Phase_2 (int)
-    self._division_limit = 7  # new Phase_2 (int)
+    self._division_limit = 2  # new Phase_2 (int)
     self._division_probability = 0.6  # new Phase_2 (float)
     self._division_cooldown = 1 # new Phase_2 (int)
     self._resistance_level = resistance_level  # new Phase_2 (int)
@@ -294,47 +294,7 @@ class Cell:
       self.die()
 
     return self
-    # if self.died_by_age() and self.died_by_division():
-    #   print("age and division")
-    #   self._died_by_age +=1
-    #   self._died_by_division +=1
-    #   self._died_by_age_division += 1
-    #   if self.died_by_poisoning():
-    #       self._died_by_poisoning +=1
-    #       self._died_by_age_poisoning +=1
-    #       self._died_by_division_poisoning +=1
-    #       self._died_by_age_division_poisoning +=1
-    #       self.die()
-    #       print("died 1")
-    #   self.die()
-    #   print("died 2")
 
-    # elif self.died_by_age():
-    #   self._died_by_age +=1
-    #   if self.died_by_poisoning():
-    #       self._died_by_poisoning +=1
-    #       self._died_by_age_poisoning +=1
-    #       self.die()
-    #       print("died 3")
-    #   self.die()
-    #   print("died 4")
-
-    # elif self.died_by_division():
-    #   self._died_by_division +=1
-    #   if self.died_by_poisoning():
-    #       self._died_by_poisoning +=1
-    #       self._died_by_division_poisoning +=1
-    #       self.die()
-    #       print("died 5")
-    #   self.die()
-    #   print("died 6")
-
-    # elif self.died_by_poisoning():
-
-    #   self._died_by_poisoning +=1
-    #   self.die()     
-    #   print("died 7")
-    return self
 
   def divide(self:Cell, patch:CellPatch, neighbours:list)->bool:
     """Divides this cell using a given patch and returns a booelan if the division 
@@ -380,9 +340,6 @@ class Cell:
               
               else:
                   new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 2))) 
-
-              #new_patch.cell(new_cell)
-              #new_patch.put_cell(new_cell)
 
               self._last_division = 0  # reset the counter from the last division
               self._divisions = self._divisions + 1

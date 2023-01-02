@@ -157,7 +157,15 @@ class Grid():
                         continue
         return neighbors
 
-    def reset(self):
+    def reset_grid(self):
+        '''This method resets the list for the patches and cells'''
+        self._list_patches = []
+        self._cells = []
+        self._list_grids = []
+        self._list_patches = []
+        self._list_cell_patches = []
+
+    def reset_data(self):
         self._list_patches = []
         self._grid = []
         self._cells = []
@@ -178,13 +186,12 @@ class Simulation(Grid):
         self._died_by_age = 0
         self._died_by_division = 0
         self._died_by_poisoning = 0 
-        self._died_by_age_division_poisoning = 0
         self._died_by_age_division = 0
-        self._died_by_age_poisoning = 0
-        self._died_by_division_poisoning = 0 
+
+
 
     def start(self:Simulation):
-
+        print('\nSimulation is running ...')
         ticks = 0
         if self._visualisation == True:
             vis = Visualiser(self.grid._list_patches, self.grid.rows(), self.grid.cols(), grid_lines= True)
@@ -214,22 +221,35 @@ class Simulation(Grid):
                 # elif cell.died_by_poisoning():
                 #     self._cells.remove(cell)
                 #     self._died_by_poisoning += 1
-                elif not cell.is_alive():  # remove poisoing dead cells
+                elif not cell.is_alive():  # remove poisoning dead cells
                     self.grid._cells.remove(cell)
                     self._died_by_poisoning += 1
 
             
             if self._visualisation == True:
                 vis.update()
+                
             ticks += 1
-            print(ticks)
+            # print(ticks)
             self.grid._cells.extend(temp)
 
         print(self._died_by_age_division)
         print(self._died_by_age)
         print(self._died_by_division)
         print(self._died_by_poisoning)
-        vis.wait_close()
+
+        self.grid.reset_grid()
+        self.reset_stats()
+        if self._visualisation == True:
+            print("Simulation finished, please close the window in order to do call the menu.")
+            vis.wait_close()
+
+    def reset_stats(self):
+        self._died_by_age = 0
+        self._died_by_division = 0
+        self._died_by_poisoning = 0 
+        self._died_by_age_division = 0
+
 
 
 class Menu(Simulation):
@@ -291,13 +311,16 @@ class Menu(Simulation):
         print("2: Setup")
         print("3: Run simulation")
         print("4: Reset to default setup")
-        print("5: Quit")
+        print("5: Visualisation ON/OFF")
+        print("6: Quit")
         print()
         self._menu_choice = int(input("Type in a number (1-5): "))
 
         if self._menu_choice == 1:
             if self.sim._visualisation == False:
                 self._vis_status = "Disabled"
+            else: 
+                self._vis_status = "Enabled"
             '''
             this print out the display confuration menu, 
             with the parametres there has been chosen.
@@ -308,7 +331,7 @@ class Menu(Simulation):
             print("{:<22} {}".format("Active grid", self.sim.grid._strGrid))
             print("{:<22} {}".format("Initial population", self.sim.grid._init_pop))
             print("{:<22} {}".format("Age limit", 10))
-            print("{:<22} {}".format("Division limit", 7))
+            print("{:<22} {}".format("Division limit", 2))
             print("{:<22} {}".format("Division probability", 0.6))
             print("{:<22} {}".format("Division cooldown", 1))
             print("{:<22} {}".format("Time limit", self.sim._max_ticks))
@@ -328,9 +351,9 @@ class Menu(Simulation):
             if not the else statement will print, the "Default" are enabled and then return the user to the menue.
             '''
 
-            self.simulation = "Setup"
+            self._sim_status = "Setup"
             self.grid_menu()
-
+            print("Changed settings.")
             self.print_menu()
 
         elif self._menu_choice == 3:
@@ -340,6 +363,30 @@ class Menu(Simulation):
             self.sim.grid.initialize_grid()
             self.sim.grid.init_pop()
             self.sim.start()
+            
+            self.print_menu()
+
+        elif self._menu_choice == 4:
+            self._sim_status = "Default"
+            self.sim.grid._init_pop = 2
+            self.sim._max_ticks = 100
+            self.sim._visualisation = True
+            self.print_menu()
+
+        elif self._menu_choice == 5:
+            vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
+            if vis_input == 0:
+                self.sim._visualisation = False
+            elif vis_input == 1:
+                self.sim._visualisation = True
+            else:
+                print("Please chose between 0 and 1 [ENABLE | DISABLE")
+                print("Try again\n")
+            self.print_menu()
+
+        elif self._menu_choice == 6:
+            quit()
+
 
 
         
