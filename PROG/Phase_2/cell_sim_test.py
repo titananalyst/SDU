@@ -86,20 +86,21 @@ class Grid():
         # Check if any element has a different length
         first_length = len(self._grid_data[0])
         if all(len(element) == first_length for element in self._grid_data):
-            print("all columns equal")
+            # print("all columns equal")
+            pass
         else:
             raise ValueError("colums are not equal")
 
         # check if rows are bigger than 3
         if len(self._grid_data) >= 3:
-            print("rows bigger than 3")
+            # print("rows bigger than 3")
             self._rows = len(self._grid_data)
         else:
             raise ValueError("therea re not enough rows")
 
         # check if colums are bigger than 3
         if all(len(element) >= 3 for element in self._grid_data):
-            print("cols bigger than 3")
+            # print("cols bigger than 3")
             self._cols = len(self._grid_data[0])
         else:
             raise ValueError("there are not enough cols")
@@ -156,10 +157,21 @@ class Grid():
                         continue
         return neighbors
 
+    def reset(self):
+        self._list_patches = []
+        self._grid = []
+        self._cells = []
+        self._grid_data = None
+        self._list_patches = []
+        self._list_cell_patches = []
+        self._intCellPatch = 0
+
+
 
 class Simulation(Grid):
     def __init__(self:Simulation):
         super().__init__()
+        self.grid = Grid()
         self._max_ticks = 100
         self._visualisation = True
         # statistics:
@@ -172,16 +184,17 @@ class Simulation(Grid):
         self._died_by_division_poisoning = 0 
 
     def start(self:Simulation):
+
         ticks = 0
         if self._visualisation == True:
-            vis = Visualiser(g._list_patches, g.rows(), g.cols(), grid_lines= True)
+            vis = Visualiser(self.grid._list_patches, self.grid.rows(), self.grid.cols(), grid_lines= True)
 
-        while ticks < self._max_ticks and len(g._cells) > 0:
-            random.shuffle(g._cells)
+        while ticks < self._max_ticks and len(self.grid._cells) > 0:
+            random.shuffle(self.grid._cells)
             temp = []
-            for cell in g._cells:
+            for cell in self.grid._cells:
 
-                new_cell = cell.divide(cell.patch(), g.find_neighbours(cell))
+                new_cell = cell.divide(cell.patch(), self.grid.find_neighbours(cell))
                 temp.append(new_cell)
                 #temp.append(s.append_neighbors(g.find_neighbours(cell), cell))
                 temp = [i for i in temp if i is not None]
@@ -190,26 +203,27 @@ class Simulation(Grid):
                 cell.tick()
                 if cell.died_by_age() and cell.died_by_division():
                     cell.patch().remove_cell()
-                    g._cells.remove(cell)
+                    self.grid._cells.remove(cell)
                     self._died_by_age_division += 1
                 elif cell.died_by_age():
-                    g._cells.remove(cell)
+                    self.grid._cells.remove(cell)
                     self._died_by_age += 1
                 elif cell.died_by_division():
-                    g._cells.remove(cell)
+                    self.grid._cells.remove(cell)
                     self._died_by_division += 1
                 # elif cell.died_by_poisoning():
-                #     g._cells.remove(cell)
+                #     self._cells.remove(cell)
                 #     self._died_by_poisoning += 1
                 elif not cell.is_alive():  # remove poisoing dead cells
-                    g._cells.remove(cell)
+                    self.grid._cells.remove(cell)
                     self._died_by_poisoning += 1
 
             
             if self._visualisation == True:
                 vis.update()
             ticks += 1
-            g._cells.extend(temp)
+            print(ticks)
+            self.grid._cells.extend(temp)
 
         print(self._died_by_age_division)
         print(self._died_by_age)
@@ -221,29 +235,49 @@ class Simulation(Grid):
 class Menu(Simulation):
     def __init__(self):
         super().__init__()
-        self.grid = Grid()
+        #self.grid = Grid()
         self.sim = Simulation()
+        self.sim.grid.list_grids()
         self._vis_status = True
         self._sim_status = "Default"
         self._menu_choice = 1
 
+    
     def grid_menu(self):
-        
-        self.grid.list_grids()
         print("The following grids are in your folder, which one do you want to use?")
         print("Type in the number of the grid:")
-        for i in range(len(self.grid._list_grids)):
-            print(i+1, self.grid._list_grids[i])
+        for i in range(len(self.sim.grid._list_grids)):
+            print(i+1, self.sim.grid._list_grids[i])
+        print('')
 
-        length = len(self.grid._list_grids)
+        length = len(self.sim.grid._list_grids)
         if length != 0:
-            choice = int(input('Type in a your number between 0 and {} : '.format(length)))
-            self.grid._strGrid = self.grid._list_grids[choice - 1]
-            print("Choosen:", self.grid._strGrid)
+            choice = int(input('Type in a your number between 1 and {} : '.format(length)))
+            if choice > 0 and choice <= length:
+                self.sim.grid._strGrid = self.sim.grid._list_grids[choice - 1]
+                print("Choosen:", self.sim.grid._strGrid)
+                self.sim.grid.loader()
+                self.sim.grid.checker()
+                self.sim.grid.initialize_grid()
+            else:
+                raise ValueError("Please enter a number between 1 and {}".format(length))
 
         else: 
             raise IndexError('There are no grids available in the folder.')
 
+        pop_input = int(input('Enter number of init population (1-{}): '.format(self.sim.grid._intCellPatch)))
+        if pop_input > 0 and pop_input <= self.sim.grid._intCellPatch:
+            self.sim.grid._init_pop = pop_input
+        else:
+            raise ValueError("Please enter a number between 1 and {}".format(self.sim.grid._intCellPatch))
+
+        ticks_input = int(input('Enter tick duration for simulation (greater than 0): '))
+        if ticks_input > 0:
+            self.sim._max_ticks = ticks_input
+        else:
+            raise ValueError("Please enter a duration greater than 0")
+
+        self.sim.grid.reset()
         
 
     def print_menu(self):
@@ -271,8 +305,8 @@ class Menu(Simulation):
             print("\n" + 34 * "-")
             print("{:<22} {}".format("Parameter", self._sim_status))
             print(34 * "-")
-            print("{:<22} {}".format("Active grid", self.grid._strGrid))
-            print("{:<22} {}".format("Initial population", self.sim._init_pop))
+            print("{:<22} {}".format("Active grid", self.sim.grid._strGrid))
+            print("{:<22} {}".format("Initial population", self.sim.grid._init_pop))
             print("{:<22} {}".format("Age limit", 10))
             print("{:<22} {}".format("Division limit", 7))
             print("{:<22} {}".format("Division probability", 0.6))
@@ -296,10 +330,17 @@ class Menu(Simulation):
 
             self.simulation = "Setup"
             self.grid_menu()
-            
-
 
             self.print_menu()
+
+        elif self._menu_choice == 3:
+            print(self.sim.grid._strGrid)
+            self.sim.grid.loader()
+            self.sim.grid.checker()
+            self.sim.grid.initialize_grid()
+            self.sim.grid.init_pop()
+            self.sim.start()
+
 
         
 
