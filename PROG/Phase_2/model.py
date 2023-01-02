@@ -68,60 +68,6 @@ class ObstaclePatch(BasePatch):
     return self._is_obstacle
 
 
-# This is the modified "Patch" class from Phase_1
-class CellPatch(BasePatch):
-  """Represents a 'patch' at the intersection of the riven row and column of the simulation grid."""
-  
-  def __init__(self:CellPatch, row:int, col:int, toxicity:int):
-    """    
-    Parameters
-    ----------
-    row, col: int
-      The index of the row and column containing this patch.
-    """
-    self._col = col
-    self._row = row
-    self._toxicity = toxicity  # new Phase_2
-    self._cell : Optional[Cell] = None
-
-  def col(self:CellPatch)->int:
-    """Returns the index of the column containing this patch."""
-    return self._col
-
-  def row(self:CellPatch)->int:
-    """Returns the index of the row containing this patch."""
-    return self._row
-
-  def toxicity(self:CellPatch)->int:  # new Phase_2
-    """Returns the toxicity level of this patch."""
-    return self._toxicity
-  
-  def has_cell(self:CellPatch)->bool:
-    """Checks if the patch holds a cell."""
-    return self._cell is not None
-
-  def put_cell(self:CellPatch,cell:Cell)->None:
-    """Puts a cell on this patch.
-    
-    Preconditions: there is no cell on this patch and the cell is not on another patch
-    """
-    assert not self.has_cell(), "This patch has a cell."
-    assert cell.patch() is self, "The cell is on another patch."
-    self._cell = cell
-
-  def remove_cell(self:CellPatch)->None:
-    """Removes any cell currently on this patch."""
-    self._cell = None
-
-  def cell(self:CellPatch)->Optional[Cell]:
-    """Returns the cell currently on this patch, if any."""
-    return self._cell
-
-  def __repr__(self:CellPatch)->str:
-    """Returns a string representation of this patch."""
-    return f"Patch({self.row()}, {self.col()})"
-
-
 # This is the modified "Cell" class from Phase_1
 class CellPatch(BasePatch):
   """Represents a 'patch' at the intersection of the riven row and column of the simulation grid."""
@@ -319,40 +265,6 @@ class Cell:
 
       if random_prob <= p:
         return True
-        # if neighbours != []:
-
-        #   new_patch = random.choice(neighbours) 
-        #   # print(new_patch, type(new_patch), new_patch.has_cell())
-          
-
-        #   if patch.cell().resistance() == 0:
-        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(0, 2)))
-
-        #   elif patch.cell().resistance() == 1:
-        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-1, 2)))
-  
-        #   elif patch.cell().resistance() == 8:
-        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 1)))
-
-        #   elif patch.cell().resistance() == 9:
-        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 0)))
-          
-        #   else:
-        #     new_cell = Cell(new_patch, patch.cell().resistance() + int(random.randint(-2, 2))) 
-
-        #   self._last_division = 0  # reset the counter from the last division
-        #   self._divisions = self._divisions + 1
-
-        #   if isinstance(new_cell, Cell):
-        #     print(type(new_cell))
-        #     new_cell._parent = self
-        #     new_cell._generation = new_cell.parent().generation() + 1
-
-        #     return new_cell
-    #       pass
-    #     pass
-    #   pass
-    # pass
 
 
 if __name__ == "__main__":

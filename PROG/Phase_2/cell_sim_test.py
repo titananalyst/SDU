@@ -16,6 +16,7 @@ from random import randint, choice
 from time import sleep
 import os
 import re
+import matplotlib.pyplot as plt
 
 
 # TODO: import menu.py and run menu in cell_sim.py
@@ -193,9 +194,9 @@ class Grid():
         '''This method resets the list for the patches and cells'''
         self._list_patches = []
         self._cells = []
-        self._list_grids = []
         self._list_patches = []
         self._list_cell_patches = []
+        self._intCellPatch = 0
 
     def reset_data(self):
         self._list_patches = []
@@ -215,34 +216,48 @@ class Simulation(Grid):
         self._max_ticks = 100
         self._visualisation = True
         # statistics:
+        self._dictGen = {}
+        self._dictResults = {
+            "Generation": [],
+            "intIndividuals": [],
+            "min_res": [],
+            "max_res": [],
+            "avg_res": []
+        }
         self._died_by_age = 0
         self._died_by_division = 0
         self._died_by_poisoning = 0 
         self._died_by_age_division = 0
-
-
+        self._tot_cells = 0
+        self._tot_died = 0
 
     def start(self:Simulation):
         print('\nSimulation is running ...')
+        self.reset_graph()  # reset data structures for the graphs
         ticks = 0
         if self._visualisation == True:
             vis = Visualiser(self.grid._list_patches, self.grid.rows(), self.grid.cols(), grid_lines= True)
+        self._dictGen[0] = []
+        for i in self.grid._cells:
+            self._dictGen[0].append(i.resistance())
 
         while ticks < self._max_ticks and len(self.grid._cells) > 0:
             random.shuffle(self.grid._cells)
             temp = []
             for cell in self.grid._cells:
-                # print(self.grid._cells)
 
                 if cell.divide(cell.patch()):
                     new_cell = self.grid.set_parent(cell, self.grid.find_neighbours(cell))
                     if isinstance(new_cell, Cell):
-                        temp.append(new_cell)   
-                
-                #temp.append(s.append_neighbors(g.find_neighbours(cell), cell))
-                # temp = [i for i in temp if i is not None]
-                # temp = [i for i in temp if i is not False]
-                
+                        temp.append(new_cell)
+                        self._tot_cells += 1
+                        if new_cell.generation() in self._dictGen:
+                            self._dictGen[new_cell.generation()].append(new_cell.resistance())
+                        else:
+                            self._dictGen[new_cell.generation()] = []
+                            self._dictGen[new_cell.generation()].append(new_cell.resistance())
+
+
                 cell.tick()
                 if cell.died_by_age() and cell.died_by_division():
                     cell.patch().remove_cell()
@@ -254,31 +269,24 @@ class Simulation(Grid):
                 elif cell.died_by_division():
                     self.grid._cells.remove(cell)
                     self._died_by_division += 1
-                # elif cell.died_by_poisoning():
-                #     self._cells.remove(cell)
-                #     self._died_by_poisoning += 1
                 elif not cell.is_alive():  # remove poisoning dead cells
                     self.grid._cells.remove(cell)
                     self._died_by_poisoning += 1
-                print(cell.generation())
             
             if self._visualisation == True:
                 vis.update()
                 
             ticks += 1
-            # print(ticks)
             self.grid._cells.extend(temp)
 
-        print(self._died_by_age_division)
-        print(self._died_by_age)
-        print(self._died_by_division)
-        print(self._died_by_poisoning)
-
+        # self._tot_cells = self._tot_cells + self.grid
         self.grid.reset_grid()
         self.reset_stats()
         if self._visualisation == True:
             print("Simulation finished, please close the window in order to do call the menu.")
             vis.wait_close()
+        else:
+            print("Simulation finished, because all the cells died already.")
 
     def reset_stats(self):
         self._died_by_age = 0
@@ -286,17 +294,41 @@ class Simulation(Grid):
         self._died_by_poisoning = 0 
         self._died_by_age_division = 0
 
+    def reset_graph(self):
+        self._dictGen = {}
+        self._dictResults = {
+            "Generation": [],
+            "intIndividuals": [],
+            "min_res": [],
+            "max_res": [],
+            "avg_res": []
+        }
+
+    def statistics(self):
+        '''This method prints the statistics for a simulation'''
+        print("Statistics")
+        print(' - Duration (ticks) {:>7}'.format(self._max_ticks))
+        print(' - Total cells {:>12}'.format(self.tot_cells))
+        print(' - Total deaths {:>11}'.format(self.tot_deaths))
+        print(' - Cause of death')
+        print('   - Age limit {:>12}'.format(self.age_limit))
+        print('   - Division limit {:>7}'.format(self.div_limit))
+        print('   - Overcrowding {:>9}'.format(self.overcrowding))
+        print('\n')
+        print('Statistics printed.')
+
 
 
 class Menu(Simulation):
     def __init__(self):
         super().__init__()
-        #self.grid = Grid()
         self.sim = Simulation()
         self.sim.grid.list_grids()
         self._vis_status = True
         self._sim_status = "Default"
         self._menu_choice = 1
+        self._plt1 = None
+        self._plt2 = None
 
     
     def grid_menu(self):
@@ -332,9 +364,72 @@ class Menu(Simulation):
             self.sim._max_ticks = ticks_input
         else:
             raise ValueError("Please enter a duration greater than 0")
-
         self.sim.grid.reset_data()
+
+    def graph_data(self):
+        for i in self.sim._dictGen:
+            gen = i
+            intIndividuals = len(self.sim._dictGen[i])
+            min_res = min(self.sim._dictGen[i])
+            max_res = max(self.sim._dictGen[i])
+            avg_res = (round(sum(self.sim._dictGen[i])/len(self.sim._dictGen[i]), 2))
+            
+            self.sim._dictResults['Generation'].append(gen)
+            self.sim._dictResults['intIndividuals'].append(intIndividuals)
+            self.sim._dictResults['min_res'].append(min_res)
+            self.sim._dictResults['max_res'].append(max_res)
+            self.sim._dictResults['avg_res'].append(avg_res)            
+            
+        print(self.sim._dictResults)
+
+    def figure1(self):
+        gen = self.sim._dictResults['Generation']
+        individuals = self.sim._dictResults['intIndividuals']
+
+        plt.plot(gen, individuals)
+        plt.title('Individuals over genereations')
+        plt.xlabel('Generation')
+        plt.ylabel('Individuals')
+        plt.show()
+
+    def figure2(self):
+        gen = self.sim._dictResults['Generation']
+        min_res =self.sim._dictResults['min_res']
+        max_res =self.sim._dictResults['max_res']
+        avg_res = self.sim._dictResults['avg_res']
         
+        plt.plot(gen, max_res, "tab:orange", label = "Max")
+        plt.plot(gen, avg_res, "-g", label = "Avg")
+        plt.plot(gen, min_res, "-b", label= "Min")
+        
+        plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode= "expand", borderaxespad = 0, ncol = 3)
+        plt.show()
+        
+    def figure(self):
+        gen = self.sim._dictResults['Generation']
+        individuals = self.sim._dictResults['intIndividuals']
+        min_res =self.sim._dictResults['min_res']
+        max_res =self.sim._dictResults['max_res']
+        avg_res = self.sim._dictResults['avg_res']
+
+        fig, (ax0, ax1,) = plt.subplots(2, 1)
+        fig.suptitle("Cell Simulation Results")
+        plt.subplots_adjust(hspace = 0.6)
+
+        ax0.plot(gen, individuals)
+        ax0.set_xlabel('Generation')
+        ax0.set_ylabel('Individuals')
+        ax0.set_title("Generations vs. Individuals")
+
+        ax1.plot(gen, max_res, "tab:orange", label = "Max")
+        ax1.plot(gen, avg_res, "-g", label = "Avg")
+        ax1.plot(gen, min_res, "-b", label= "Min")
+        ax1.set_xlabel("Generation")
+        ax1.set_ylabel("Resistance level")
+        ax1.set_title("Generations vs. Resistance")
+        
+        ax1.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", mode= "expand", borderaxespad = 0)
+        fig.show()
 
     def print_menu(self):
         '''
@@ -348,9 +443,10 @@ class Menu(Simulation):
         print("3: Run simulation")
         print("4: Reset to default setup")
         print("5: Visualisation ON/OFF")
-        print("6: Quit")
+        print("6. Display graphs")
+        print("7: Quit")
         print()
-        self._menu_choice = int(input("Type in a number (1-6): "))
+        self._menu_choice = int(input("Type in a number (1-7): "))
 
         if self._menu_choice == 1:
             if self.sim._visualisation == False:
@@ -369,7 +465,7 @@ class Menu(Simulation):
             print("{:<22} {}".format("Age limit", 10))
             print("{:<22} {}".format("Division limit", 2))
             print("{:<22} {}".format("Division probability", 0.6))
-            print("{:<22} {}".format("Division cooldown", 1))
+            print("{:<22} {}".format("Division cooldown", 2))
             print("{:<22} {}".format("Time limit", self.sim._max_ticks))
             print("{:<22} {}\n".format("Visualisation", self._vis_status))
             self.print_menu()
@@ -421,7 +517,30 @@ class Menu(Simulation):
             self.print_menu()
 
         elif self._menu_choice == 6:
+            self.graph_data()
+            self.figure()
+            self.print_menu()
+
+        elif self._menu_choice == 7:
             quit()
+
+        elif self._menu_choice == 33:
+            self.graph_data()
+            self.print_menu()
+
+        elif self._menu_choice == 34:
+            self.figure1()
+            self.print_menu()
+
+        elif self._menu_choice == 35:
+            self.figure2()
+            self.print_menu()
+
+        elif self._menu_choice == 36:
+            self.figure3()
+            self.print_menu()
+            
+
 
 
 
@@ -434,4 +553,5 @@ if __name__ == "__main__":
 
     m = Menu()
     m.print_menu()
+    
 
