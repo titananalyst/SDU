@@ -435,18 +435,3 @@ if __name__ == "__main__":
     m = Menu()
     m.print_menu()
 
-    # oop
-    # g = Grid()
-    # # print(g.list_grids())  # access to all grids in the directory
-    # g.loader()  # loads the grid of the desired grid.txt file
-    # print(g._list_grids) # access to all grids in)
-    # g.checker()  # checks the grid input about errors
-    # g.initialize_grid() # initializes the grid
-    # g.init_pop()  # initializes living cells on the grid
-
-    # s = Simulation()
-    # s.start() # starts the simulation
-
-    # vis = Visualiser(g.list_patches(), g.rows(), g.cols(), grid_lines=True)
-    # vis.wait_close()
-
