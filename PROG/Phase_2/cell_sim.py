@@ -2,346 +2,515 @@
 # -*-coding:utf-8 -*-
 '''
 @File    :   cell_sim.py
-@Time    :   2022/12/12 22:12:29
+@Time    :   2022/11/08 01:28:29
 @Author  :   Simone Wolff Nielsen
 @Author  :   Mia Trabjerglund
 @Author  :   Jonas Keller
 '''
-import os
-from model import Patch, Cell
+
+from __future__ import annotations # to use a class in type hints of its members
+from model import BasePatch, ObstaclePatch, CellPatch, Cell
 from visualiser import Visualiser
 import random
-from random import randint, choice
-from time import sleep
+import os
+import re
+import matplotlib.pyplot as plt
+
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 
-data = open('grid_1.txt').read().split('\n')
-print(data)
 
 class Grid():
-    '''
-    Create a grid with patches and cells and 
-    useful functions are defiend
-    '''
-    def __init__(self):
-        self.row = 15
-        self.col = 20
-        self.list_patches = []
-        self.list_cells = []
-        self.init_pop = 2
-        self.prob = 0.2
-        self.age_lim = 10
-        self.div_lim = 2
-        self.cooldown = 2
-
-
-    def start(self):
-        '''
-        This method initializes the patches with a size
-        (row*col) and randomly sets the initial population
-        of cells on the grid. 
-        '''
-        self.list_patches = [Patch(i, j) for i in range(self.row) for j in range(self.col)]  # creating patches with coordinates from index row and col
-        # self.list_cells = [Cell(self.list_patches[randint(0, len(self.list_patches))]) for i in range(self.init_pop)]
-        # print(len(self.list_patches))
-        if self.init_pop > (self.row * self.col):
-            raise ValueError("Try again and enter a initial population equal or lower than", (self.row * self.col))
-            
-        while len(self.list_cells) < self.init_pop:
-            patch = randint(0, len(self.list_patches)-1)
-            # patch = 4
-            # print(patch)
-            if self.list_patches[patch].has_cell() == False:
-                self.list_cells.append(Cell(self.list_patches[patch]))
+    def __init__(self:Grid):
+        self._cols = 0
+        self._rows = 0
+        self._grid = []
+        self._cells = []
+        self._list_grids = []
+        self._strGrid = 'grid_1.txt'
+        self._grid_data = None
+        self._list_patches = []
+        self._list_cell_patches = []
+        self._init_pop = 2
+        self._intCellPatch = 0
 
         
+    def cols(self:Grid)->int:
+        """Return the number of columns in the grid"""
+        return self._cols
 
-    def find_neighbors(self, curr_cell):
-        '''
-        This method searches the neighbors arround a cell in a 
-        3x3 block. Returns a list of objects with the neighbors
-        patches.
+    def rows(self:Grid)->int:
+        """Return the number of rows in the grid"""
+        return self._rows
+
+    def list_patches(self:Grid)->list:
+        """Return the list of patches from the initialized grid"""
+        return self._list_patches
+
+    def list_grids(self):
+        """Return a list of all grid files in the current directory."""
+        for i in os.listdir(dname):
+            if i[-4:] == '.txt':
+                self._list_grids.append(i)
+
+    def loader(self):
+        """Returns a list with separated strings loaded from a chosen file
+        from list_grids."""
+        self._grid_data = open(self._strGrid).read().split('\n')
+
+
+    def checker(self):
+        # TODO: try to implement doctests (look it up)
+        """Checks if the input is valid to initialize a grid
         
-        Keyword arguments:
-        curr_cell -- living cell which is attached to a patch
-        '''
+        >>> checker(input_grid, rows, cols)
+        Traceback (most recent call last):
+            ...
+        raise ValueError("colums are not equal")
+        ValueError: colums are not equal
+
+        """
+        # check that all lines contain % or int and not other letters or characters
+        # done with regex (regular expressions)
+        for element in self._grid_data:
+            for character in element:
+                pattern = r'^[0-9%]*$'
+                if not re.match(pattern, character):
+                    raise ValueError("This line contains invalid characters: ", element, character)
+
+        # Check if any element has a different length
+        first_length = len(self._grid_data[0])
+        if all(len(element) == first_length for element in self._grid_data):
+            # print("all columns equal")
+            pass
+        else:
+            raise ValueError("colums are not equal")
+
+        # check if rows are bigger than 3
+        if len(self._grid_data) >= 3:
+            # print("rows bigger than 3")
+            self._rows = len(self._grid_data)
+        else:
+            raise ValueError("therea re not enough rows")
+
+        # check if colums are bigger than 3
+        if all(len(element) >= 3 for element in self._grid_data):
+            # print("cols bigger than 3")
+            self._cols = len(self._grid_data[0])
+        else:
+            raise ValueError("there are not enough cols")
+
+    def initialize_grid(self):
+        """Return a list of BasePatches with the size of the input grid and
+        returns a list of Obstacle- and CellPatches.
+        The CellPatches have assigned the toxicity level to them."""
+        
+        base_patches = [BasePatch(i, j) for i in range(self._rows) for j in range(self._cols)]
+
+        for row in self._grid_data:
+            for col in row:
+                base_patch = base_patches[0]
+
+                if col == '%':
+                    temp = ObstaclePatch(base_patch.row(), base_patch.col())
+                    self._list_patches.append(temp)
+
+                elif int(col) >= 0 and int(col) <= 9:
+                    temp = CellPatch(base_patch.row(), base_patch.col(), int(col))
+                    self._list_patches.append(temp)
+                    self._list_cell_patches.append(temp)
+                    self._intCellPatch += 1
+
+                base_patches.pop(0)
+
+    def init_pop(self):
+        """Creates new instances of Cells on a CellPatch until the maximum number
+        of initial population."""
+        temp = [i for i in self._list_patches if isinstance(i, CellPatch)]
+
+        if self._init_pop > self._intCellPatch:
+            raise ValueError("Try again and enter a initial population equal or lower than", self._intCellPatch)
+
+        while len(self._cells) < self._init_pop:
+            patch = random.choice(temp)  # does not prevent of choosing the same patch twice
+            self._cells.append(Cell(patch, 0))  # initialize resistance 0
+            temp.remove(patch)  # remove choosen patch to avoid taking the same twice
+
+    def find_neighbours(self, curr_cell)->list: 
         neighbors = []
-        for i in self.list_patches:
-            # all upper patches
-            if i.row() == (curr_cell.patch().row() - 1) % self.row:
-                if i.col() == curr_cell.patch().col():
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() - 1) % self.col:
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() + 1) % self.col:
-                    neighbors.append(i)
 
-            # middle left and right patch
-            if i.row() == curr_cell.patch().row():
-                if i.col() == (curr_cell.patch().col() - 1) % self.col:
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() + 1) % self.col:
-                    neighbors.append(i)
+        for i in range((curr_cell.patch().row()-1) , (curr_cell.patch().row() +2)):
+            for j in range((curr_cell.patch().col()-1) , (curr_cell.patch().col() +2)):
+                neighbors.extend([patch for patch in self._list_patches if patch.row() == (i % self.rows()) and patch.col() == (j % self.cols())])
 
-            # all the lower patches
-            if i.row() == (curr_cell.patch().row() + 1) % self.row:
-                if i.col() == curr_cell.patch().col():
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() - 1) % self.col:
-                    neighbors.append(i)
-                if i.col() == (curr_cell.patch().col() + 1) % self.col:
-                    neighbors.append(i)
-        
-        # print(neighbors)
-        # for i in neighbors:
-        #     print(i, i.row(), i.col())
-
+                for k in neighbors:
+                    if isinstance(k, CellPatch) and k.has_cell() == True:
+                        neighbors.remove(k)
+                    elif isinstance(k, ObstaclePatch):
+                        neighbors.remove(k)
+                    else:
+                        continue
         return neighbors
 
+    def set_parent(self, curr_cell, neighbours):
+        if neighbours != []:
+            new_patch = random.choice(neighbours) 
 
-    # def evolution(self):
-    #     for i in self.list_cells:
-    #         neighbors = find_neighbors(i)
+            if curr_cell.resistance() == 0:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(0, 2)))
+
+            elif curr_cell.resistance() == 1:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-1, 2)))
+    
+            elif curr_cell.resistance() == 8:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 1)))
+
+            elif curr_cell.resistance() == 9:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 0)))
+            
+            else:
+                new_cell = Cell(new_patch, curr_cell.resistance() + int(random.randint(-2, 2))) 
+
+            curr_cell._last_division = 0  # reset the counter from the last division
+            curr_cell._divisions = curr_cell._divisions + 1
+
+            if isinstance(new_cell, Cell):
+                new_cell._parent = curr_cell
+                new_cell._generation = new_cell.parent().generation() + 1
+
+                return new_cell
+
+    def reset_grid(self):
+        '''This method resets the list for the patches and cells'''
+        self._list_patches = []
+        self._cells = []
+        self._list_patches = []
+        self._list_cell_patches = []
+        self._intCellPatch = 0
+
+    def reset_data(self):
+        self._list_patches = []
+        self._grid = []
+        self._cells = []
+        self._grid_data = None
+        self._list_patches = []
+        self._list_cell_patches = []
+        self._intCellPatch = 0
 
 
 class Simulation(Grid):
-    '''
-    Class for running the simulation, the Grid class is 
-    enharitanced and methods to run the simulation are implemented.
-    '''
-    def __init__(self):
+    def __init__(self:Simulation):
         super().__init__()
-        self.board = Grid()
-        self.max_ticks = 100
-        self.tot_cells = 0
-        self.tot_deaths = 0
-        self.age_limit = 0
-        self.div_limit = 0
-        self.overcrowding = 0
-        self.visualisation = True
+        self.grid = Grid()
+        self._max_ticks = 100
+        self._visualisation = True
+        # statistics:
+        self._dictGen = {}
+        self._dictResults = {
+            "Generation": [],
+            "intIndividuals": [],
+            "min_res": [],
+            "max_res": [],
+            "avg_res": []
+        }
+        self._died_by_age = 0
+        self._died_by_division = 0
+        self._died_by_poisoning = 0 
+        self._died_by_age_division = 0
+        self._tot_cells = 0
+        self._tot_died = 0
+        self._tot_died_by_age = 0
+        self._tot_died_by_division = 0
 
-        
-    def start(self):
-        '''
-        This method starts the simulation, it also starts the visualisation,
-        it makes the whole simulation iterate and execute all statements
-        for a successful simulation.
-        Further explanation is written with one-line, or multi-line docstrings. 
-        '''
+    def start(self:Simulation):
         print('\nSimulation is running ...')
-        self.board.start()
+        self.reset_graph()  # reset data structures for the graphs
+        self.reset_stats()  # reset structures for the statistics
         ticks = 0
-        if self.visualisation == True:
-            vis = Visualiser(self.board.list_patches, self.board.row, self.board.col, grid_lines= True)
-        while ticks < self.max_ticks and len(self.board.list_cells) > 0:
-        
+        if self._visualisation == True:
+            vis = Visualiser(self.grid._list_patches, self.grid.rows(), self.grid.cols(), grid_lines= True)
+        self._dictGen[0] = []
+        for i in self.grid._cells:
+            self._dictGen[0].append(i.resistance())
+
+        while ticks < self._max_ticks and len(self.grid._cells) > 0:
+            random.shuffle(self.grid._cells)
             temp = []
-            # print('\n' + 20 * '-')
-            # print("Iteration", ticks)
-            # print(20 * '-', '\n')
-            
-            '''
-            start iteration over all living cells, at start 
-            every living cell ages and the timestep for 
-            the last division increments by 1            
-            '''
-            for i in self.board.list_cells:
-                i.tick()
-                # print('age:', i.age(), 'div:', i.divisions(), 'cd:', i.last_division())
-                # print(i.age())
+            for cell in self.grid._cells:
 
-                '''
-                die of division limit reached, if the cell
-                reaches the max amount of division it dies
-                and gets removed from the list of living cells
-                '''
-                if i.divisions() == self.board.div_lim:
-                    i.die()
-                    self.board.list_cells.remove(i)
-                    self.div_limit += 1
-                    # print("died from division limit")
-                    # vis.update()
-                else:
-                    '''
-                    die of age limit reached, if a cell gets as old
-                    as the age limit it dies and gets removed from 
-                    the list of living cells
-                    '''
-                    if i.age() >= self.board.age_lim:
-                        # print(self.board.list_cells)
-                        i.die()
-                        self.board.list_cells.remove(i)
-                        self.age_limit += 1
-                        # print(self.board.list_cells)
-                        # vis.update()
-                    '''
-                    If age limit is not reached go further and chose 
-                    a random probability
-                    '''
-                    if i.age() < self.board.age_lim:
-                        prob = round(random.random(), 2)
-                        # print(prob)
-                        '''
-                        Go further if the random probability is within
-                        the division probability.
-                        Check surounding patches if they are not! occupied by
-                        a living cell append them to a new list.
-                        '''
-                        if prob <= self.board.prob:
-                            # print("++++++++++++ good prob", prob, "<=", self.board.prob)
-                            # print(prob)
-                            temp_neighbor = self.board.find_neighbors(i)  # find surounding patches
-                            neighbor_list = []
-                            for j in temp_neighbor:
-                                if not j.has_cell():
-                                    neighbor_list.append(j)
-                            '''
-                            overcrowding, check if all neighbors are occupied
-                            by living cells, for this the list neighbor_list has to be empty,
-                            that means that every patch is occupied and no patch is free. 
-                            If yes, a random one of the eldest cells will dies.
-
-                            To do this the list with the surounding neighbors is taken
-                            and the max age of the list is evaluated. Then a list with
-                            the eldest cells from the neighbors is created and a random
-                            choice of the eldest cells is chosen and then dies to solve
-                            the overcrowding problem.
-                            '''
-                            if neighbor_list == []:
-                                # print("die of overcrowding")
-                                age = [i.cell().age() for i in temp_neighbor]
-                                max_age = max(age)
-                                # print("age:", age)
-                                # print("max_age:", max_age)
-                                elder_list = [i for i in temp_neighbor if i.cell().age() == max_age]
-                                # print("list:", elder_list)
-                                rand_elder = choice(elder_list)
-                                rand_elder_cell = rand_elder.cell()
-                                # print("rand_elder:", rand_elder)
-                                # print("rand_elder_cell:", rand_elder_cell)
-                                rand_elder_cell.die()
-                                self.board.list_cells.remove(rand_elder_cell)
-                                self.overcrowding += 1
-                                # sleep(0.5)
-                                # vis.update()
-                            '''
-                            Division, if there are free patches surounding the cell
-                            perform a random divison to a free patch, then append
-                            it to the list of living cells
-                            '''
-                            if neighbor_list != []:
-                                # print("no overcrowding")
-                                if i.last_division() >= self.board.cooldown:
-                                    # print("cooldown good:", i.last_division())
-                                    # print("Last division:", i.last_division())
-                                    choice_neighbor = choice(neighbor_list)
-                                    # print(choice_neighbor) # debugging
-                                    temp.append(i.divide(choice_neighbor))
-                                    self.tot_cells += 1
-                                    # print("new cell")
-                                    # sleep(0.5)
-                                    # vis.update()
-                                else:
-                                    # print("cooldown not good:", i.last_division())
-                                    continue
-                            
-                            else:
-                                continue
+                if cell.divide(cell.patch()):
+                    new_cell = self.grid.set_parent(cell, self.grid.find_neighbours(cell))
+                    if isinstance(new_cell, Cell):
+                        temp.append(new_cell)
+                        self._tot_cells += 1
+                        if new_cell.generation() in self._dictGen:
+                            self._dictGen[new_cell.generation()].append(new_cell.resistance())
                         else:
-                            '''
-                            Overcrowing, if the probability for division is not within the
-                            range of the division probability.
-                            Make a overcrowding test, to cover all living cells with a
-                            overcrowding test at every iteration.
-                            Works the same way as the inner overcroding test. To evaluate
-                            to perform the test, the list of neighbors with the patches must
-                            contain living cells on every patch.
-                            '''
-                            # print("------------ bad prob:", prob, ">", self.board.prob)
-                            overcrowd = self.board.find_neighbors(i)
-                            # print("Nr. of occupied N: ", len([i.has_cell() for i in overcrowd if i.has_cell() == True]))
-                            # for i in overcrowd:
-                            #     print(i.has_cell())
-                            if len([i.has_cell() for i in overcrowd if i.has_cell() == True]) == 8:
-                                # print("Nr. of occupied N: ", len([i.has_cell() for i in overcrowd]))
-                                # print("die of overcrowding")
-                                age = [i.cell().age() for i in overcrowd]
-                                max_age = max(age)
-                                # print("age:", age)
-                                # print("max_age:", max_age)
-                                elder_list = [i for i in overcrowd if i.cell().age() == max_age]
-                                # print("list:", elder_list)
-                                rand_elder = choice(elder_list)
-                                rand_elder_cell = rand_elder.cell()
-                                # print("rand_elder:", rand_elder)
-                                # print("rand_elder_cell:", rand_elder_cell)
-                                rand_elder_cell.die()
-                                self.board.list_cells.remove(rand_elder_cell)
-                                self.overcrowding += 1
-                                # vis.update()
-                            else:
-                                # print("no overcrowding")
-                                continue
-            '''
-            If the visualisation is enabeld it will turn on here and the 
-            iteration tick will increment by one.
-            The board of living cells gets updated.
-            '''
-            #sleep(0.4)
-            if self.visualisation == True:
-                vis.update()
-            ticks += 1
-            self.board.list_cells.extend(temp) # append new cells to the list
-            # print(self.board.list_cells)
-        '''
-        Calculate total created cells and total died cells,
-        then reset the board, print the statistics and afterwards
-        also reset the statistics for the next simulation run.
-        The program end until the visualisation window is closed.
-        '''
-        self.tot_cells = self.tot_cells + self.board.init_pop
-        self.tot_deaths = self.age_limit + self.div_limit + self.overcrowding
+                            self._dictGen[new_cell.generation()] = []
+                            self._dictGen[new_cell.generation()].append(new_cell.resistance())
 
-        self.reset_board()
+                cell.tick()
+                if cell.died_by_age() and cell.died_by_division():
+                    cell.patch().remove_cell()
+                    self.grid._cells.remove(cell)
+                    self._died_by_age_division += 1
+                elif cell.died_by_age():
+                    self.grid._cells.remove(cell)
+                    self._died_by_age += 1
+                elif cell.died_by_division():
+                    self.grid._cells.remove(cell)
+                    self._died_by_division += 1
+                elif not cell.is_alive():  # remove poisoning dead cells
+                    self.grid._cells.remove(cell)
+                    self._died_by_poisoning += 1
+            
+            if self._visualisation == True:
+                vis.update()
+                
+            ticks += 1
+            self.grid._cells.extend(temp)
+
+        self._tot_cells = self._tot_cells + self.grid._init_pop
+        self._tot_died = self._died_by_age + self._died_by_age_division + self._died_by_division + self._died_by_poisoning
+        self._tot_died_by_age = self._died_by_age_division + self._died_by_age
+        self._tot_died_by_division = self._died_by_age_division + self._died_by_division
+        self.grid.reset_grid()
         
-        self.statistics()
-        self.reset_stats()
-        if self.visualisation == True: 
+        if self._visualisation == True:
             print("Simulation finished, please close the window in order to do call the menu.")
             vis.wait_close()
-
-    def reset_board(self):
-        '''This method resets the list for the patches and cells'''
-        self.board.list_patches = []
-        self.board.list_cells = []
-
-    def reset_stats(self):
-        '''This method resets the statistics for the next simulation run'''
-        self.tot_cells = 0
-        self.tot_deaths = 0
-        self.age_limit = 0
-        self.div_limit = 0
-        self.overcrowding = 0
+        else:
+            print("Simulation finished, because all the cells died already.")
 
     def statistics(self):
         '''This method prints the statistics for a simulation'''
         print("Statistics")
-        print(' - Duration (ticks) {:>7}'.format(self.max_ticks))
-        print(' - Total cells {:>12}'.format(self.tot_cells))
-        print(' - Total deaths {:>11}'.format(self.tot_deaths))
+        print(' - Duration (ticks) {:>12}'.format(self._max_ticks))
+        print(' - Total cells {:>17}'.format(self._tot_cells))
+        print(' - Total deaths {:>16}'.format(self._tot_died))
         print(' - Cause of death')
-        print('   - Age limit {:>12}'.format(self.age_limit))
-        print('   - Division limit {:>7}'.format(self.div_limit))
-        print('   - Overcrowding {:>9}'.format(self.overcrowding))
+        print('   - Age & Division limit {:>6}'.format(self._died_by_age_division))
+        print('   - Age limit {:>17}'.format(self._died_by_age))
+        print('   - Division limit {:>12}'.format(self._died_by_division))
+        print('   - Poisoning {:>17}'.format(self._died_by_poisoning))
         print('\n')
         print('Statistics printed.')
 
-S = Simulation()
-S.start()
+    def reset_stats(self):
+        self._died_by_age = 0
+        self._died_by_division = 0
+        self._died_by_poisoning = 0 
+        self._died_by_age_division = 0
+        self._tot_cells = 0
+        self._tot_died = 0
+        self._tot_died_by_age = 0
+        self._tot_died_by_division = 0
+
+    def reset_graph(self):
+        self._dictGen = {}
+        self._dictResults = {
+            "Generation": [],
+            "intIndividuals": [],
+            "min_res": [],
+            "max_res": [],
+            "avg_res": []
+        }
+
+
+class Menu(Simulation):
+    def __init__(self):
+        super().__init__()
+        self.sim = Simulation()
+        self.sim.grid.list_grids()
+        self._vis_status = True
+        self._sim_status = "Default"
+        self._menu_choice = 1
+        self._plt1 = None
+        self._plt2 = None
+
+    
+    def grid_menu(self):
+        print("The following grids are in your folder, which one do you want to use?")
+        print("Type in the number of the grid:")
+        for i in range(len(self.sim.grid._list_grids)):
+            print(i+1, self.sim.grid._list_grids[i])
+        print('')
+
+        length = len(self.sim.grid._list_grids)
+        if length != 0:
+            choice = int(input('Type in a your number between 1 and {} : '.format(length)))
+            if choice > 0 and choice <= length:
+                self.sim.grid._strGrid = self.sim.grid._list_grids[choice - 1]
+                print("Choosen:", self.sim.grid._strGrid)
+                self.sim.grid.loader()
+                self.sim.grid.checker()
+                self.sim.grid.initialize_grid()
+            else:
+                raise ValueError("Please enter a number between 1 and {}".format(length))
+
+        else: 
+            raise IndexError('There are no grids available in the folder.')
+
+        pop_input = int(input('Enter number of init population (1-{}): '.format(self.sim.grid._intCellPatch)))
+        if pop_input > 0 and pop_input <= self.sim.grid._intCellPatch:
+            self.sim.grid._init_pop = pop_input
+        else:
+            raise ValueError("Please enter a number between 1 and {}".format(self.sim.grid._intCellPatch))
+
+        ticks_input = int(input('Enter tick duration for simulation (greater than 0): '))
+        if ticks_input > 0:
+            self.sim._max_ticks = ticks_input
+        else:
+            raise ValueError("Please enter a duration greater than 0")
+        self.sim.grid.reset_data()
+
+    def graph_data(self):
+        if self.sim._dictGen != {}:
+            for i in self.sim._dictGen:
+                gen = i
+                intIndividuals = len(self.sim._dictGen[i])
+                min_res = min(self.sim._dictGen[i])
+                max_res = max(self.sim._dictGen[i])
+                avg_res = (round(sum(self.sim._dictGen[i])/len(self.sim._dictGen[i]), 2))
+                
+                self.sim._dictResults['Generation'].append(gen)
+                self.sim._dictResults['intIndividuals'].append(intIndividuals)
+                self.sim._dictResults['min_res'].append(min_res)
+                self.sim._dictResults['max_res'].append(max_res)
+                self.sim._dictResults['avg_res'].append(avg_res)         
+        else:
+            raise Exception("There is no data, run a simulation first.")
+
+    def figure(self):
+        gen = self.sim._dictResults['Generation']
+        individuals = self.sim._dictResults['intIndividuals']
+        min_res =self.sim._dictResults['min_res']
+        max_res =self.sim._dictResults['max_res']
+        avg_res = self.sim._dictResults['avg_res']
+
+        fig, (ax0, ax1,) = plt.subplots(2, 1)
+        fig.suptitle("Cell Simulation Results")
+        plt.subplots_adjust(hspace = 0.6)
+
+        ax0.plot(gen, individuals)
+        ax0.set_xlabel('Generation')
+        ax0.set_ylabel('Individuals')
+        ax0.set_title("Individuals vs. Generations")
+
+        ax1.plot(gen, max_res, "tab:orange", label = "Max")
+        ax1.plot(gen, avg_res, "-g", label = "Avg")
+        ax1.plot(gen, min_res, "-b", label= "Min")
+        ax1.set_xlabel("Generation")
+        ax1.set_ylabel("Resistance level")
+        ax1.set_title("Resistance level vs. Generations")
+        
+        ax1.legend(bbox_to_anchor=(1.14, 0.5), loc="center", borderaxespad = 0)
+        fig.tight_layout()
+        fig.show()
+
+
+    def print_menu(self):
+        '''
+        this print out the display of the menu, 
+        where all the print-statements exicute one line at a time. 
+        '''
+        print("\nMenu:")
+        print(34 * "-")
+        print("1: Display configuration")
+        print("2: Setup")
+        print("3: Run simulation")
+        print("4: Reset to default setup")
+        print("5: Visualisation ON/OFF")
+        print("6. Graphs & Statistics")
+        print("7: Quit")
+        print()
+        self._menu_choice = int(input("Type in a number (1-7): "))
+
+        if self._menu_choice == 1:
+            if self.sim._visualisation == False:
+                self._vis_status = "Disabled"
+            else: 
+                self._vis_status = "Enabled"
+            '''
+            this print out the display confuration menu, 
+            with the parametres there has been chosen.
+            '''
+            print("\n" + 34 * "-")
+            print("{:<22} {}".format("Parameter", self._sim_status))
+            print(34 * "-")
+            print("{:<22} {}".format("Active grid", self.sim.grid._strGrid))
+            print("{:<22} {}".format("Initial population", self.sim.grid._init_pop))
+            print("{:<22} {}".format("Age limit", 10))
+            print("{:<22} {}".format("Division limit", 2))
+            print("{:<22} {}".format("Division probability", 0.6))
+            print("{:<22} {}".format("Division cooldown", 2))
+            print("{:<22} {}".format("Time limit", self.sim._max_ticks))
+            print("{:<22} {}\n".format("Visualisation", self._vis_status))
+            self.print_menu()
+
+        elif self._menu_choice == 2:
+            '''
+            this is a go through of the setting in Qick menu. 
+            exaple 1:
+            age_input is set to be an integere with the code int(). 
+            Inside int there is a code input() witch make the user avalible to make its own choice,
+            but that is restricted by the int().
+            That is why there is a messege inside the input() that the user will get. 
+            if the user select correctly the first if statement will be exicuted. 
+            inside that if there i a logical statement that checks if the user has made an valid choice.
+            if not the else statement will print, the "Default" are enabled and then return the user to the menue.
+            '''
+
+            self._sim_status = "Setup"
+            self.grid_menu()
+            print("Changed settings.")
+            self.print_menu()
+
+        elif self._menu_choice == 3:
+            self.sim.grid.loader()
+            self.sim.grid.checker()
+            self.sim.grid.initialize_grid()
+            self.sim.grid.init_pop()
+            self.sim.start()
+            self.graph_data()
+            self.print_menu()
+
+        elif self._menu_choice == 4:
+            self._sim_status = "Default"
+            self.sim.grid._init_pop = 2
+            self.sim._max_ticks = 100
+            self.sim._visualisation = True
+            print("Settings reset to default settings.\n")
+            self.print_menu()
+
+        elif self._menu_choice == 5:
+            vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
+            if vis_input == 0:
+                self.sim._visualisation = False
+            elif vis_input == 1:
+                self.sim._visualisation = True
+            else:
+                print("Please chose between 0 and 1 [ENABLE | DISABLE")
+                print("Try again\n")
+            self.print_menu()
+
+        elif self._menu_choice == 6:
+            self.figure()
+            self.sim.statistics()
+            self.print_menu()
+
+        elif self._menu_choice == 7:
+            quit()
+
 
 if __name__ == "__main__":
-    Grid()
-    Simulation()
+    # docstest
+    # import doctest
+    # doctest.testmod()
+
+    m = Menu()
+    m.print_menu()
+    
+
