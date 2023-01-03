@@ -590,7 +590,7 @@ class Menu(Simulation):
         
         # save the biggest generation(s) for the statistics
         maxim = [ele for ele in self.sim._dictResults['intIndividuals'] if ele == max(self.sim._dictResults['intIndividuals'])]
-        temp = [(self.sim._dictResults['intIndividuals'].index(i), i) for i in maxim]
+        temp = [(i, ele) for i, ele in enumerate(self.sim._dictResults['intIndividuals']) if ele in maxim]
         self.sim._dictResults['max_gen'].extend(temp)
 
     def figure(self):
