@@ -186,7 +186,7 @@ class Grid():
             raise ValueError("Try again and enter a initial population equal or lower than {}".format(self._intCellPatch))
 
         while len(self._cells) < self._init_pop:
-            patch = random.choice(temp)  # does not prevent of choosing the same patch twice
+            patch = random.choice(temp)
             self._cells.append(Cell(patch, 0))  # initialize resistance 0
             temp.remove(patch)  # remove choosen patch to avoid taking the same twice
 
