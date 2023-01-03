@@ -129,7 +129,7 @@ class Grid():
         temp = [i for i in self._list_patches if isinstance(i, CellPatch)]
 
         if self._init_pop > self._intCellPatch:
-            raise ValueError("Try again and enter a initial population equal or lower than", self._intCellPatch)
+            raise ValueError("Try again and enter a initial population equal or lower than {}".format(self._intCellPatch))
 
         while len(self._cells) < self._init_pop:
             patch = random.choice(temp)  # does not prevent of choosing the same patch twice
@@ -180,13 +180,13 @@ class Grid():
 
                 return new_cell
 
-    def reset_grid(self):
-        '''This method resets the list for the patches and cells'''
-        self._list_patches = []
-        self._cells = []
-        self._list_patches = []
-        self._list_cell_patches = []
-        self._intCellPatch = 0
+    # def reset_grid(self):
+    #     '''This method resets the list for the patches and cells'''
+    #     self._list_patches = []
+    #     self._cells = []
+    #     self._list_patches = []
+    #     self._list_cell_patches = []
+    #     self._intCellPatch = 0
 
     def reset_data(self):
         self._list_patches = []
@@ -274,11 +274,13 @@ class Simulation(Grid):
         self._tot_died = self._died_by_age + self._died_by_age_division + self._died_by_division + self._died_by_poisoning
         self._tot_died_by_age = self._died_by_age_division + self._died_by_age
         self._tot_died_by_division = self._died_by_age_division + self._died_by_division
-        self.grid.reset_grid()
-        
+        self.grid.reset_data()
+
         if self._visualisation == True:
             print("Simulation finished, please close the window in order to do call the menu.")
             vis.wait_close()
+        else:
+            print("Simulation finished, please continue with further processing")
 
     def statistics(self):
         '''This method prints the statistics for a simulation'''
@@ -328,15 +330,21 @@ class Menu(Simulation):
 
     
     def grid_menu(self):
+        self.sim.grid.reset_data()
         print("The following grids are in your folder, which one do you want to use?")
-        print("Type in the number of the grid:")
+        print("Type in the number of the grid:\n")
         for i in range(len(self.sim.grid._list_grids)):
             print(i+1, self.sim.grid._list_grids[i])
         print('')
 
         length = len(self.sim.grid._list_grids)
         if length != 0:
-            choice = int(input('Type in a your number between 1 and {} : '.format(length)))
+            choice = input('Type in a your number between 1 and {} : '.format(length))
+            if choice.isdigit():
+                choice = int(choice)
+            else:
+                raise ValueError("Please just use integers to interact with the menue.")
+
             if choice > 0 and choice <= length:
                 self.sim.grid._strGrid = self.sim.grid._list_grids[choice - 1]
                 print("Choosen:", self.sim.grid._strGrid, "\n")
@@ -345,17 +353,26 @@ class Menu(Simulation):
                 self.sim.grid.initialize_grid()
             else:
                 raise ValueError("\nPlease enter a number between 1 and {}. You chose {}.".format(length, choice))
-
         else: 
             raise IndexError('\nThere are no grids available in the folder.')
 
-        pop_input = int(input('Enter number of init population (1-{}): '.format(self.sim.grid._intCellPatch)))
+        pop_input = input('Enter number of init population (1-{}): '.format(self.sim.grid._intCellPatch))
+        if pop_input.isdigit():
+            pop_input = int(pop_input)
+        else:
+            raise ValueError("Please just use integers to interact with the menue.")
+
         if pop_input > 0 and pop_input <= self.sim.grid._intCellPatch:
             self.sim.grid._init_pop = pop_input
         else:
             raise ValueError("\nPlease enter a number between 1 and {}. You chose {}.".format(self.sim.grid._intCellPatch, pop_input))
 
-        ticks_input = int(input('Enter tick duration for simulation (greater than 0): '))
+        ticks_input = input('Enter tick duration for simulation (greater than 0): ')
+        if ticks_input.isdigit():
+            ticks_input = int(ticks_input)
+        else:
+            raise ValueError("Please just use integers to interact with the menue.")
+
         if ticks_input > 0:
             self.sim._max_ticks = ticks_input
         else:
@@ -363,48 +380,48 @@ class Menu(Simulation):
         self.sim.grid.reset_data()
 
     def graph_data(self):
-        if self.sim._dictGen != {}:
-            for i in self.sim._dictGen:
-                gen = i
-                intIndividuals = len(self.sim._dictGen[i])
-                min_res = min(self.sim._dictGen[i])
-                max_res = max(self.sim._dictGen[i])
-                avg_res = (round(sum(self.sim._dictGen[i])/len(self.sim._dictGen[i]), 2))
-                
-                self.sim._dictResults['Generation'].append(gen)
-                self.sim._dictResults['intIndividuals'].append(intIndividuals)
-                self.sim._dictResults['min_res'].append(min_res)
-                self.sim._dictResults['max_res'].append(max_res)
-                self.sim._dictResults['avg_res'].append(avg_res)         
-        else:
-            raise Exception("There is no data, run a simulation first.")
+        for i in self.sim._dictGen:
+            gen = i
+            intIndividuals = len(self.sim._dictGen[i])
+            min_res = min(self.sim._dictGen[i])
+            max_res = max(self.sim._dictGen[i])
+            avg_res = (round(sum(self.sim._dictGen[i])/len(self.sim._dictGen[i]), 2))
+            
+            self.sim._dictResults['Generation'].append(gen)
+            self.sim._dictResults['intIndividuals'].append(intIndividuals)
+            self.sim._dictResults['min_res'].append(min_res)
+            self.sim._dictResults['max_res'].append(max_res)
+            self.sim._dictResults['avg_res'].append(avg_res)         
 
     def figure(self):
-        gen = self.sim._dictResults['Generation']
-        individuals = self.sim._dictResults['intIndividuals']
-        min_res =self.sim._dictResults['min_res']
-        max_res =self.sim._dictResults['max_res']
-        avg_res = self.sim._dictResults['avg_res']
+        if self.sim._dictGen != {}:
+            gen = self.sim._dictResults['Generation']
+            individuals = self.sim._dictResults['intIndividuals']
+            min_res =self.sim._dictResults['min_res']
+            max_res =self.sim._dictResults['max_res']
+            avg_res = self.sim._dictResults['avg_res']
 
-        fig, (ax0, ax1,) = plt.subplots(2, 1)
-        fig.suptitle("Cell Simulation Results")
-        plt.subplots_adjust(hspace = 0.6)
+            fig, (ax0, ax1,) = plt.subplots(2, 1)
+            fig.suptitle("Cell Simulation Results")
+            plt.subplots_adjust(hspace = 0.6)
 
-        ax0.plot(gen, individuals)
-        ax0.set_xlabel('Generation')
-        ax0.set_ylabel('Individuals')
-        ax0.set_title("Individuals vs. Generations")
+            ax0.plot(gen, individuals)
+            ax0.set_xlabel('Generation')
+            ax0.set_ylabel('Individuals')
+            ax0.set_title("Individuals vs. Generations")
 
-        ax1.plot(gen, max_res, "tab:orange", label = "Max")
-        ax1.plot(gen, avg_res, "-g", label = "Avg")
-        ax1.plot(gen, min_res, "-b", label= "Min")
-        ax1.set_xlabel("Generation")
-        ax1.set_ylabel("Resistance level")
-        ax1.set_title("Resistance level vs. Generations")
-        
-        ax1.legend(bbox_to_anchor=(1.14, 0.5), loc="center", borderaxespad = 0)
-        fig.tight_layout()
-        fig.show()
+            ax1.plot(gen, max_res, "tab:orange", label = "Max")
+            ax1.plot(gen, avg_res, "-g", label = "Avg")
+            ax1.plot(gen, min_res, "-b", label= "Min")
+            ax1.set_xlabel("Generation")
+            ax1.set_ylabel("Resistance level")
+            ax1.set_title("Resistance level vs. Generations")
+            
+            ax1.legend(bbox_to_anchor=(1.14, 0.5), loc="center", borderaxespad = 0)
+            fig.tight_layout()
+            fig.show()
+        else:
+            raise Exception("\nThere is no data, run a simulation first.")
 
 
     def print_menu(self):
@@ -463,10 +480,9 @@ class Menu(Simulation):
                         self._sim_status = "Setup"
                         self.grid_menu()
                         print("Changed settings.")
-                    except Exception as e:
+                    except ValueError as e:
                         print(e)
-                    finally:
-                        self.print_menu()
+
 
                 elif self._menu_choice == 3:
                     self.sim.grid.loader()
@@ -486,15 +502,16 @@ class Menu(Simulation):
                     self.print_menu()
 
                 elif self._menu_choice == 5:
-                    vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
-                    if vis_input == 0:
-                        self.sim._visualisation = False
-                    elif vis_input == 1:
-                        self.sim._visualisation = True
-                    else:
-                        print("Please chose between 0 and 1 [ENABLE | DISABLE")
-                        print("Try again\n")
-                    self.print_menu()
+                    try:
+                        vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
+                        if vis_input == 0:
+                            self.sim._visualisation = False
+                        elif vis_input == 1:
+                            self.sim._visualisation = True
+                        else:
+                            raise TypeError("\nPlease choose between 1 and 0 [ENABLE | DISABLE]. You chose {}.".format(vis_input))
+                    except ValueError:
+                        print("\nPlease choose between 1 and 0 [ENABLE | DISABLE].")
 
                 elif self._menu_choice == 6:
                     self.figure()
@@ -505,9 +522,9 @@ class Menu(Simulation):
                     quit()
                 
                 else:
-                    raise ValueError("\nEnter a valid menu choice between 1 and 7:")
-            except Exception as e:
-                print(e)
+                    raise ValueError("\nEnter a valid menu choice between 1 and 7!")
+            except ValueError:
+                print("\nEnter a valid menu choice between 1 and 7!")
 
 
 
