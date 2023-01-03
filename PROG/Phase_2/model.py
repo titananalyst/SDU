@@ -217,9 +217,7 @@ class Cell:
   def tick(self:Cell)->None:
     self._age = self._age + 1  # update the age
     self._last_division = self._last_division + 1 # update the last division counter
-    # print(type(self))
-    # print(self.is_alive())
-    #Deaths:
+ 
 
     if self.died_by_age() and self.died_by_division():
       self.die()
