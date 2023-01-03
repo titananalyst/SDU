@@ -2,7 +2,7 @@
 # -*-coding:utf-8 -*-
 '''
 @File    :   cell_sim.py
-@Time    :   2022/11/08 01:28:29
+@Time    :   2022/12/01 12:28:29
 @Author  :   Simone Wolff Nielsen
 @Author  :   Mia Trabjerglund
 @Author  :   Jonas Keller
@@ -180,14 +180,6 @@ class Grid():
 
                 return new_cell
 
-    # def reset_grid(self):
-    #     '''This method resets the list for the patches and cells'''
-    #     self._list_patches = []
-    #     self._cells = []
-    #     self._list_patches = []
-    #     self._list_cell_patches = []
-    #     self._intCellPatch = 0
-
     def reset_data(self):
         self._list_patches = []
         self._grid = []
@@ -325,9 +317,6 @@ class Menu(Simulation):
         self._vis_status = True
         self._sim_status = "Default"
         self._menu_choice = 1
-        self._plt1 = None
-        self._plt2 = None
-
     
     def grid_menu(self):
         self.sim.grid.reset_data()
