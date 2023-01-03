@@ -24,6 +24,29 @@ os.chdir(dname)
 
 class Grid():
     def __init__(self:Grid):
+        """Create a new Grid
+        >>> grid = Grid()
+        >>> grid._cols
+        0
+        >>> grid._rows
+        0
+        >>> grid._grid
+        []
+        >>> grid._list_grids
+        []
+        >>> grid._strGrid
+        'grid_1.txt'
+        >>> grid._grid_data
+        
+        >>> grid._list_patches
+        []
+        >>> grid._list_cell_patches
+        []
+        >>> grid._init_pop
+        2
+        >>> grid._intCellPatch
+        0
+        """
         self._cols = 0
         self._rows = 0
         self._grid = []
@@ -37,38 +60,57 @@ class Grid():
         self._intCellPatch = 0
 
     def cols(self:Grid)->int:
-        """Return the number of columns in the grid"""
+        """Return the number of columns in the grid
+        >>> grid = Grid()
+        >>> grid.cols()
+        0
+        """
         return self._cols
 
     def rows(self:Grid)->int:
-        """Return the number of rows in the grid"""
+        """Return the number of rows in the grid
+        >>> grid = Grid()
+        >>> grid.rows()
+        0
+        """
         return self._rows
 
     def list_patches(self:Grid)->list:
-        """Return the list of patches from the initialized grid"""
+        """Return the list of patches from the initialized grid
+        >>> grid = Grid()
+        >>> grid.list_patches()
+        []
+        """
         return self._list_patches
 
     def list_grids(self):
-        """Return a list of all grid files in the current directory."""
+        """Return a list of all grid files in the current directory.
+        >>> grid = Grid()
+        >>> grid.list_grids()
+        
+        """
         for i in os.listdir(dname):
             if i[-4:] == '.txt':
                 self._list_grids.append(i)
 
     def loader(self):
         """Returns a list with separated strings loaded from a chosen file
-        from list_grids."""
+        from list_grids.
+        >>> grid = Grid()
+        >>> grid.loader()
+        
+        """
         self._grid_data = open(self._strGrid).read().split('\n')
 
     def checker(self):
-        # TODO: try to implement doctests (look it up)
         """Checks if the input is valid to initialize a grid
-        
-        >>> checker(input_grid, rows, cols)
-        Traceback (most recent call last):
-            ...
-        raise ValueError("colums are not equal")
-        ValueError: colums are not equal
-
+        Raises: ValueError if the input contains invalid characters
+                ValueError if the columns or rows are not euqal in size
+                ValueError if there are less than 3 entries in the rows
+                ValueError if there are less than 3 entries in the colums
+        >>> grid = Grid()
+        >>> grid.loader()
+        >>> grid.checker()
         """
 
         # check that all lines contain % or int and not other letters or characters
@@ -99,16 +141,23 @@ class Grid():
             raise ValueError("There are not enough cols! Insert valid m x n grid.")
 
     def initialize_grid(self):
-        """Return a list of BasePatches with the size of the input grid and
-        returns a list of Obstacle- and CellPatches.
-        The CellPatches have assigned the toxicity level to them."""
-        
+        """Creates a list of BasePatches with the size of the input grid and
+        returns a list of Obstacle- and CellPatches, the lists are assigned to the
+        Grid object and ObstaclePatch- and CellPatch- Objects are initialized.
+
+        The CellPatches have assigned the toxicity level to them, the level is extracted
+        from the grid with the given numbers for the toxicity level.
+        >>> grid = Grid()
+        >>> grid.loader()
+        >>> grid.checker()
+        >>> grid.initialize_grid()
+
+        """
         base_patches = [BasePatch(i, j) for i in range(self._rows) for j in range(self._cols)]
 
         for row in self._grid_data:
             for col in row:
                 base_patch = base_patches[0]
-
                 if col == '%':
                     temp = ObstaclePatch(base_patch.row(), base_patch.col())
                     self._list_patches.append(temp)
@@ -123,7 +172,14 @@ class Grid():
 
     def init_pop(self):
         """Creates new instances of Cells on a CellPatch until the maximum number
-        of initial population."""
+        of initial population.
+        >>> grid = Grid()
+        >>> grid.loader()
+        >>> grid.checker()
+        >>> grid.initialize_grid()
+        >>> grid.init_pop()
+
+        """
         temp = [i for i in self._list_patches if isinstance(i, CellPatch)]
 
         if self._init_pop > self._intCellPatch:
@@ -201,7 +257,9 @@ class Simulation(Grid):
             "intIndividuals": [],
             "min_res": [],
             "max_res": [],
-            "avg_res": []
+            "avg_res": [],
+            "count_gen": [],
+            "max_gen": []
         }
         self._died_by_age = 0
         self._died_by_division = 0
@@ -209,8 +267,6 @@ class Simulation(Grid):
         self._died_by_age_division = 0
         self._tot_cells = 0
         self._tot_died = 0
-        self._tot_died_by_age = 0
-        self._tot_died_by_division = 0
 
     def start(self:Simulation):
         print('\nSimulation is running ...')
@@ -220,7 +276,7 @@ class Simulation(Grid):
         if self._visualisation == True:
             vis = Visualiser(self.grid._list_patches, self.grid.rows(), self.grid.cols(), grid_lines= True)
         self._dictGen[0] = []
-        for i in self.grid._cells:
+        for i in self.grid._cells: # initial population 
             self._dictGen[0].append(i.resistance())
 
         while ticks < self._max_ticks and len(self.grid._cells) > 0:
@@ -262,8 +318,6 @@ class Simulation(Grid):
 
         self._tot_cells = self._tot_cells + self.grid._init_pop
         self._tot_died = self._died_by_age + self._died_by_age_division + self._died_by_division + self._died_by_poisoning
-        self._tot_died_by_age = self._died_by_age_division + self._died_by_age
-        self._tot_died_by_division = self._died_by_age_division + self._died_by_division
         self.grid.reset_data()
 
         if self._visualisation == True:
@@ -276,14 +330,16 @@ class Simulation(Grid):
         if self._dictGen != {}:
             '''This method prints the statistics for a simulation'''
             print("Statistics")
-            print(' - Duration (ticks) {:>12}'.format(self._max_ticks))
-            print(' - Total cells {:>17}'.format(self._tot_cells))
-            print(' - Total deaths {:>16}'.format(self._tot_died))
+            print(' - Duration (ticks) {:>15}'.format(self._max_ticks))
+            print(' - Nr. of Cell generations {:>8}'.format(self._dictResults['count_gen'][0]))
+            print(' - Gen(s) with highest nr. of cells (Gen, Cells) {:>10}'.format(str(self._dictResults['max_gen'])))
+            print(' - Total cells {:>20}'.format(self._tot_cells))
+            print(' - Total deaths {:>19}'.format(self._tot_died))
             print(' - Cause of death')
-            print('   - Age & Division limit {:>6}'.format(self._died_by_age_division))
-            print('   - Age limit {:>17}'.format(self._tot_died_by_age))
-            print('   - Division limit {:>12}'.format(self._tot_died_by_division))
-            print('   - Poisoning {:>17}'.format(self._died_by_poisoning))
+            print('   - Age & Division limit {:>9}'.format(self._died_by_age_division))
+            print('   - Age limit {:>20}'.format(self._died_by_age))
+            print('   - Division limit {:>15}'.format(self._died_by_division))
+            print('   - Poisoning {:>20}'.format(self._died_by_poisoning))
             print('\n')
             print('Statistics printed.')
         else:
@@ -306,7 +362,9 @@ class Simulation(Grid):
             "intIndividuals": [],
             "min_res": [],
             "max_res": [],
-            "avg_res": []
+            "avg_res": [],
+            "count_gen": [],
+            "max_gen": []
         }
 
 
@@ -380,7 +438,15 @@ class Menu(Simulation):
             self.sim._dictResults['intIndividuals'].append(intIndividuals)
             self.sim._dictResults['min_res'].append(min_res)
             self.sim._dictResults['max_res'].append(max_res)
-            self.sim._dictResults['avg_res'].append(avg_res)         
+            self.sim._dictResults['avg_res'].append(avg_res)
+        
+        # save the number of generations for statistics
+        self.sim._dictResults['count_gen'].append(len(self.sim._dictResults['Generation']))
+        
+        # save the biggest generation(s) for the statistics
+        maxim = [ele for ele in self.sim._dictResults['intIndividuals'] if ele == max(self.sim._dictResults['intIndividuals'])]
+        temp = [(self.sim._dictResults['intIndividuals'].index(i), i) for i in maxim]
+        self.sim._dictResults['max_gen'].extend(temp)
 
     def figure(self):
         if self.sim._dictGen != {}:
