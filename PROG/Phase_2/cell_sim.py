@@ -72,35 +72,33 @@ class Grid():
         ValueError: colums are not equal
 
         """
+
         # check that all lines contain % or int and not other letters or characters
         # done with regex (regular expressions)
         for element in self._grid_data:
             for character in element:
                 pattern = r'^[0-9%]*$'
                 if not re.match(pattern, character):
-                    raise ValueError("This line contains invalid characters: ", element, character)
+                    raise ValueError("This line contains invalid characters: {}, {}".format(element, character))
 
         # Check if any element has a different length
         first_length = len(self._grid_data[0])
         if all(len(element) == first_length for element in self._grid_data):
-            # print("all columns equal")
             pass
         else:
-            raise ValueError("colums are not equal")
+            raise ValueError("Colums or rows are not equal! Insert valid m x n grid.")
 
         # check if rows are bigger than 3
         if len(self._grid_data) >= 3:
-            # print("rows bigger than 3")
             self._rows = len(self._grid_data)
         else:
-            raise ValueError("therea re not enough rows")
+            raise ValueError("There are not enough rows! Insert valid m x n grid.")
 
         # check if colums are bigger than 3
         if all(len(element) >= 3 for element in self._grid_data):
-            # print("cols bigger than 3")
             self._cols = len(self._grid_data[0])
         else:
-            raise ValueError("there are not enough cols")
+            raise ValueError("There are not enough cols! Insert valid m x n grid.")
 
     def initialize_grid(self):
         """Return a list of BasePatches with the size of the input grid and
@@ -341,27 +339,27 @@ class Menu(Simulation):
             choice = int(input('Type in a your number between 1 and {} : '.format(length)))
             if choice > 0 and choice <= length:
                 self.sim.grid._strGrid = self.sim.grid._list_grids[choice - 1]
-                print("Choosen:", self.sim.grid._strGrid)
+                print("Choosen:", self.sim.grid._strGrid, "\n")
                 self.sim.grid.loader()
                 self.sim.grid.checker()
                 self.sim.grid.initialize_grid()
             else:
-                raise ValueError("Please enter a number between 1 and {}".format(length))
+                raise ValueError("\nPlease enter a number between 1 and {}. You chose {}.".format(length, choice))
 
         else: 
-            raise IndexError('There are no grids available in the folder.')
+            raise IndexError('\nThere are no grids available in the folder.')
 
         pop_input = int(input('Enter number of init population (1-{}): '.format(self.sim.grid._intCellPatch)))
         if pop_input > 0 and pop_input <= self.sim.grid._intCellPatch:
             self.sim.grid._init_pop = pop_input
         else:
-            raise ValueError("Please enter a number between 1 and {}".format(self.sim.grid._intCellPatch))
+            raise ValueError("\nPlease enter a number between 1 and {}. You chose {}.".format(self.sim.grid._intCellPatch, pop_input))
 
         ticks_input = int(input('Enter tick duration for simulation (greater than 0): '))
         if ticks_input > 0:
             self.sim._max_ticks = ticks_input
         else:
-            raise ValueError("Please enter a duration greater than 0")
+            raise ValueError("\nPlease enter a duration greater than 0. You chose {}.".format(ticks_input))
         self.sim.grid.reset_data()
 
     def graph_data(self):
@@ -410,97 +408,108 @@ class Menu(Simulation):
 
 
     def print_menu(self):
-        '''
-        this print out the display of the menu, 
-        where all the print-statements exicute one line at a time. 
-        '''
-        print("\nMenu:")
-        print(34 * "-")
-        print("1: Display configuration")
-        print("2: Setup")
-        print("3: Run simulation")
-        print("4: Reset to default setup")
-        print("5: Visualisation ON/OFF")
-        print("6. Graphs & Statistics")
-        print("7: Quit")
-        print()
-        self._menu_choice = int(input("Type in a number (1-7): "))
-
-        if self._menu_choice == 1:
-            if self.sim._visualisation == False:
-                self._vis_status = "Disabled"
-            else: 
-                self._vis_status = "Enabled"
+        while True:
             '''
-            this print out the display confuration menu, 
-            with the parametres there has been chosen.
+            this print out the display of the menu, 
+            where all the print-statements exicute one line at a time. 
             '''
-            print("\n" + 34 * "-")
-            print("{:<22} {}".format("Parameter", self._sim_status))
+            print("\nMenu:")
             print(34 * "-")
-            print("{:<22} {}".format("Active grid", self.sim.grid._strGrid))
-            print("{:<22} {}".format("Initial population", self.sim.grid._init_pop))
-            print("{:<22} {}".format("Age limit", 10))
-            print("{:<22} {}".format("Division limit", 2))
-            print("{:<22} {}".format("Division probability", 0.6))
-            print("{:<22} {}".format("Division cooldown", 2))
-            print("{:<22} {}".format("Time limit", self.sim._max_ticks))
-            print("{:<22} {}\n".format("Visualisation", self._vis_status))
-            self.print_menu()
+            print("1: Display configuration")
+            print("2: Setup")
+            print("3: Run simulation")
+            print("4: Reset to default setup")
+            print("5: Visualisation ON/OFF")
+            print("6. Graphs & Statistics")
+            print("7: Quit")
+            print()
+            try:
+                self._menu_choice = int(input("Type in a number (1-7): "))
+                if self._menu_choice == 1:
+                    if self.sim._visualisation == False:
+                        self._vis_status = "Disabled"
+                    else: 
+                        self._vis_status = "Enabled"
+                    '''
+                    this print out the display confuration menu, 
+                    with the parametres there has been chosen.
+                    '''
+                    print("\n" + 34 * "-")
+                    print("{:<22} {}".format("Parameter", self._sim_status))
+                    print(34 * "-")
+                    print("{:<22} {}".format("Active grid", self.sim.grid._strGrid))
+                    print("{:<22} {}".format("Initial population", self.sim.grid._init_pop))
+                    print("{:<22} {}".format("Age limit", 10))
+                    print("{:<22} {}".format("Division limit", 2))
+                    print("{:<22} {}".format("Division probability", 0.6))
+                    print("{:<22} {}".format("Division cooldown", 2))
+                    print("{:<22} {}".format("Time limit", self.sim._max_ticks))
+                    print("{:<22} {}\n".format("Visualisation", self._vis_status))
+                    self.print_menu()
 
-        elif self._menu_choice == 2:
-            '''
-            this is a go through of the setting in Qick menu. 
-            exaple 1:
-            age_input is set to be an integere with the code int(). 
-            Inside int there is a code input() witch make the user avalible to make its own choice,
-            but that is restricted by the int().
-            That is why there is a messege inside the input() that the user will get. 
-            if the user select correctly the first if statement will be exicuted. 
-            inside that if there i a logical statement that checks if the user has made an valid choice.
-            if not the else statement will print, the "Default" are enabled and then return the user to the menue.
-            '''
+                elif self._menu_choice == 2:
+                    '''
+                    this is a go through of the setting in Qick menu. 
+                    exaple 1:
+                    age_input is set to be an integere with the code int(). 
+                    Inside int there is a code input() witch make the user avalible to make its own choice,
+                    but that is restricted by the int().
+                    That is why there is a messege inside the input() that the user will get. 
+                    if the user select correctly the first if statement will be exicuted. 
+                    inside that if there i a logical statement that checks if the user has made an valid choice.
+                    if not the else statement will print, the "Default" are enabled and then return the user to the menue.
+                    '''
+                    try:
+                        self._sim_status = "Setup"
+                        self.grid_menu()
+                        print("Changed settings.")
+                    except Exception as e:
+                        print(e)
+                    finally:
+                        self.print_menu()
 
-            self._sim_status = "Setup"
-            self.grid_menu()
-            print("Changed settings.")
-            self.print_menu()
+                elif self._menu_choice == 3:
+                    self.sim.grid.loader()
+                    self.sim.grid.checker()
+                    self.sim.grid.initialize_grid()
+                    self.sim.grid.init_pop()
+                    self.sim.start()
+                    self.graph_data()
+                    self.print_menu()
 
-        elif self._menu_choice == 3:
-            self.sim.grid.loader()
-            self.sim.grid.checker()
-            self.sim.grid.initialize_grid()
-            self.sim.grid.init_pop()
-            self.sim.start()
-            self.graph_data()
-            self.print_menu()
+                elif self._menu_choice == 4:
+                    self._sim_status = "Default"
+                    self.sim.grid._init_pop = 2
+                    self.sim._max_ticks = 100
+                    self.sim._visualisation = True
+                    print("Settings reset to default settings.\n")
+                    self.print_menu()
 
-        elif self._menu_choice == 4:
-            self._sim_status = "Default"
-            self.sim.grid._init_pop = 2
-            self.sim._max_ticks = 100
-            self.sim._visualisation = True
-            print("Settings reset to default settings.\n")
-            self.print_menu()
+                elif self._menu_choice == 5:
+                    vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
+                    if vis_input == 0:
+                        self.sim._visualisation = False
+                    elif vis_input == 1:
+                        self.sim._visualisation = True
+                    else:
+                        print("Please chose between 0 and 1 [ENABLE | DISABLE")
+                        print("Try again\n")
+                    self.print_menu()
 
-        elif self._menu_choice == 5:
-            vis_input = int(input("Enter 1 or 0 [ENABLE | DISABLE] the visualisation: "))
-            if vis_input == 0:
-                self.sim._visualisation = False
-            elif vis_input == 1:
-                self.sim._visualisation = True
-            else:
-                print("Please chose between 0 and 1 [ENABLE | DISABLE")
-                print("Try again\n")
-            self.print_menu()
+                elif self._menu_choice == 6:
+                    self.figure()
+                    self.sim.statistics()
+                    self.print_menu()
 
-        elif self._menu_choice == 6:
-            self.figure()
-            self.sim.statistics()
-            self.print_menu()
+                elif self._menu_choice == 7:
+                    quit()
+                
+                else:
+                    raise ValueError("\nEnter a valid menu choice between 1 and 7:")
+            except Exception as e:
+                print(e)
 
-        elif self._menu_choice == 7:
-            quit()
+
 
 
 if __name__ == "__main__":
