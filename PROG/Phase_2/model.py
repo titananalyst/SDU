@@ -25,6 +25,12 @@ class BasePatch:
   """Represents a 'BasePatch' at the intersection of the riven row and column of the simulation grid."""
 
   def __init__(self:BasePatch, row:int, col:int):
+    """    
+    Parameters
+    ----------
+    row, col: int
+      The index of the row and column containing this patch.
+    """
     self._col = col
     self._row = row
   
@@ -42,9 +48,15 @@ class ObstaclePatch(BasePatch):
   """Represents a 'ObstaclePatch' at the intersection of the riven row and column of the simulation grid."""
 
   def __init__(self:ObstaclePatch, row:int, col:int):
+    """    
+    Parameters
+    ----------
+    row, col: int
+      The index of the row and column containing this patch.
+    """
     self._is_obstacle = True
-    self._col = col  # TODO: check if correctly gives col or ._col
-    self._row = row  # TODO: check if correctly takes row or ._row
+    self._col = col
+    self._row = row
 
   def col(self:ObstaclePatch)->int:
     """Returns the index of the column containing this patch."""
@@ -53,15 +65,6 @@ class ObstaclePatch(BasePatch):
   def row(self:ObstaclePatch)->int:
     """Returns the index of the row containing this patch."""
     return self._row
-
-  # deleted this method because we dont use something likes this
-  # def change(self:ObstaclePatch)->None:
-  #   """This cell will no longer be an obstacle.
-  #   It changes the status of the patch to a CellPatch
-    
-  #   Precondition: the patch is a Obstacle patch"""
-  #   assert self.is_obstacle(), "the patch must be a Obstacle patch"
-  #   self._is_obstacle = False
     
   def is_obstacle(self:ObstaclePatch)->bool:
     "Returns whether this is an obstacle patch."
@@ -76,8 +79,9 @@ class CellPatch(BasePatch):
     """    
     Parameters
     ----------
-    row, col: int
+    row, col, toxicity: int
       The index of the row and column containing this patch.
+      The toxicity of this patch
     """
     self._col = col
     self._row = row
@@ -128,8 +132,9 @@ class Cell:
     """    
     Parameters
     ----------
-    patch: Patch
+    patch: Patch, resistance_level: int
       The patch that will contain this cell (added automatically). The patch must be free.
+      The resistance level is added from the CellPatch
     """
     self._age_limit = 10  # new Phase_2 (int)
     self._division_limit = 2  # new Phase_2 (int)
@@ -137,10 +142,8 @@ class Cell:
     self._division_cooldown = 1 # new Phase_2 (int)
     self._resistance_level = resistance_level  # new Phase_2 (int)
     self._parent : Optional[Cell] = None  # new Phase_2 (cell input)
-    # TODO: not sure if parent should be written as argument in the constructor or not
-    #       since it is an optional input for the _parent attribute
     self._generation = 0
-    # old from Phase_1
+    # old from Phase_1:
     self._patch = patch
     self._age = 0
     self._divisions = 0
@@ -191,34 +194,37 @@ class Cell:
     self._patch.remove_cell()
 
   def died_by_age(self:Cell)->bool:
-    """returns if this cell i readynto die by aging"""
+    """Returns True if this cell dies by aging"""
     if self._age > self._age_limit:
       return True
     else:
       return False
 
   def died_by_division(self:Cell)->bool:
+    """Returns True if this cell dies by division"""
     if self._divisions>=self._division_limit:
       return True
     else:
       return False
   
   def died_by_poisoning(self:Cell)->bool:
-    if ((self._patch.toxicity() - self.resistance()) / 10) > 0: # this is only true if the resistance i lower than the toxicity lvl. 
-      p = (self._patch.toxicity() - self.resistance()) / 10 # sest the probability to die from toxic patch
-      # prob as described in pdf
-      # print(p)
-      if p >= round(random.random(), 2):  # random probability for death by poisoning
+    """Returns True if this cell dies by poisoning, The probability of death
+    is determined by the given probability from given by the assignment"""
+    if ((self._patch.toxicity() - self.resistance()) / 10) > 0: 
+      p = (self._patch.toxicity() - self.resistance()) / 10 
+
+      if p >= round(random.random(), 2):
         return True
     else: 
         return False
 
-
   def tick(self:Cell)->None:
-    self._age = self._age + 1  # update the age
-    self._last_division = self._last_division + 1 # update the last division counter
+    """Returns the cell by it self. The cell will be updated with age and last division.
+    The cell will also get checked if it should die or not. It will be sent to death
+    if the requirements are reached."""
+    self._age = self._age + 1  
+    self._last_division = self._last_division + 1
  
-
     if self.died_by_age() and self.died_by_division():
       self.die()
     elif self.died_by_age():
@@ -232,14 +238,12 @@ class Cell:
 
 
   def divide(self:Cell, patch:CellPatch)->bool:
-    """Divides this cell using a given patch and returns a booelan if the division 
+    """Divides this cell using a given patch and returns True if the division 
     was successful. To divide the division probability is used and it is calculated
     by reducing the base division probability by the cell resistance level divided by 20.
     
     The attempt fails with probability 1-p if the cell had a successful division during the last
     Cell.division_cooldown tick. 
-    The resistance level is inherited from the parent cell where the value mutates randomly
-    between +/- 2 from the parent cell.
     
     Precondition: the cell is alive, the patch is free"""
     assert self.is_alive(), "the cell must be alive"
@@ -256,7 +260,6 @@ class Cell:
         return True
 
 
-
-if __name__ == "__main__":
-  import doctest
-  doctest.testmod()
+# if __name__ == "__main__":
+#   import doctest
+#   doctest.testmod()

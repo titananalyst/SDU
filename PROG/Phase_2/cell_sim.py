@@ -428,7 +428,11 @@ class Simulation(Grid):
     def reset_stats(self:Simulation)->None:
         """Resets the statistics of the simulation. It is used to avoid
         overwriting and accidentally cumulating the old statistics
-        It returns nothing, but resets the existing lists."""
+        It returns nothing, but resets the existing lists.
+        >>> sim = Simulation()
+        >>> sim.reset_stats()
+
+        """
         self._died_by_age = 0
         self._died_by_division = 0
         self._died_by_poisoning = 0 
@@ -436,11 +440,15 @@ class Simulation(Grid):
         self._tot_cells = 0
         self._tot_died = 0
 
-    def reset_graph(self):
+    def reset_graph(self:Simulation)->None:
         """Resets the data for the graph and the generations.
         It is used to avoid overlapping graphs and overlapping
         datapoints.
-        It returns nothing"""
+        It returns nothing, but resets the existing dictionaries
+        >>> sim = Simulation()
+        >>> sim.reset_graph()
+
+        """
         self._dictGen = {}
         self._dictResults = {
             "Generation": [],
@@ -455,13 +463,38 @@ class Simulation(Grid):
 
 class Menu(Simulation):
     def __init__(self):
+        """ Create a new Menu instance
+        >>> menu = Menu()
+        >>> menu._vis_status
+        True
+        >>> menu._sim_status
+        'Default'
+        >>> menu._menu_choice
+        1
+        """
         super().__init__()
         self.sim = Simulation()
         self._vis_status = True
         self._sim_status = "Default"
         self._menu_choice = 1
     
-    def grid_menu(self):
+    def grid_menu(self:Menu)->None:
+        """The method allows the user to select a specific grid, which must be 
+        in the same directory as the current file. Furthermore the user can
+        set the initial population and the duration of the simulation (ticks)
+        Raises: ValueError if the user entered incorrect input, as floats or other characters
+                ValueError if the user entered to high or low values
+                ValueError if there is no txt file for a grid in the folder
+        When a Error occurs the program resets its parameters to default values. This
+        prevents the program from overriding values by passing the exceptions by triggering them.
+
+        >>> menu = Menu()
+        >>> menu.grid_menu()
+        Traceback (most recent call last):
+            ...
+        ValueError: Please just use integers to interact with the menue.
+        
+        """
         self.sim.grid.reset_data()
         self.sim.grid.list_grids()
         print("\nThe following grids are in your folder, which one do you want to use?")
@@ -518,13 +551,27 @@ class Menu(Simulation):
             raise ValueError("\nPlease enter a duration greater than 0. You chose {}.".format(ticks_input))
         self.sim.grid.reset_data()
 
-    def reset_default(self):
+    def reset_default(self:Menu)->None:
+        """Reset the start values for the simulation to the default values
+        Is used for preventing the program from overriding values by passing the 
+        exception handlings.
+        >>> menu = Menu()
+        >>> menu.reset_default()
+
+        """
         self._sim_status = "Default"
         self.sim.grid._init_pop = 2
         self.sim._max_ticks = 100
         self.sim._visualisation = True
 
-    def graph_data(self):
+    def graph_data(self:Menu)->None:
+        """This method uses the gathered generation data
+        to generate a new dictionary which then will be used
+        for visualization of the graph and display some statistics
+        >>> menu = Menu()
+        >>> menu.graph_data()
+        
+        """
         for i in self.sim._dictGen:
             gen = i
             intIndividuals = len(self.sim._dictGen[i])
@@ -547,6 +594,13 @@ class Menu(Simulation):
         self.sim._dictResults['max_gen'].extend(temp)
 
     def figure(self):
+        """Opens a figure for plotting the results of the simulation
+        The data which is stored in the Simulation object is used to display
+        the results.
+        Raises ValueError if there is no data for the simulation, to create a figure
+        >>> menu = Menu()
+
+        """
         if self.sim._dictGen != {}:
             gen = self.sim._dictResults['Generation']
             individuals = self.sim._dictResults['intIndividuals']
@@ -576,10 +630,13 @@ class Menu(Simulation):
         else:
             raise ValueError("\nThere is no data, run a simulation first.")
 
-            
-
-
-    def print_menu(self):
+    def print_menu(self:Menu)->None:    
+        """This method initializes the menu which the user needs to interact with.
+        It lets the user choose between different options to communicate with the program.
+        Raises: ValueError at different points in the menu to ensure that the user can not 
+                type in false options.
+        >>> menu = Menu()
+        """
         while True:
             '''
             this print out the display of the menu, 
@@ -603,8 +660,7 @@ class Menu(Simulation):
                     else: 
                         self._vis_status = "Enabled"
                     '''
-                    this print out the display confuration menu, 
-                    with the parametres there has been chosen.
+                    This prints out the Display configuration menu.
                     '''
                     print("\n" + 34 * "-")
                     print("{:<22} {}".format("Parameter", self._sim_status))
@@ -617,27 +673,15 @@ class Menu(Simulation):
                     print("{:<22} {}".format("Division cooldown", 2))
                     print("{:<22} {}".format("Time limit", self.sim._max_ticks))
                     print("{:<22} {}\n".format("Visualisation", self._vis_status))
-                    # self.print_menu()
 
                 elif self._menu_choice == 2:
-                    '''
-                    this is a go through of the setting in Qick menu. 
-                    exaple 1:
-                    age_input is set to be an integere with the code int(). 
-                    Inside int there is a code input() witch make the user avalible to make its own choice,
-                    but that is restricted by the int().
-                    That is why there is a messege inside the input() that the user will get. 
-                    if the user select correctly the first if statement will be exicuted. 
-                    inside that if there i a logical statement that checks if the user has made an valid choice.
-                    if not the else statement will print, the "Default" are enabled and then return the user to the menue.
-                    '''
+                    """"""
                     try:
                         self._sim_status = "Setup"
                         self.grid_menu()
                         print("Changed settings.")
                     except ValueError as e:
                         print(e)
-
 
                 elif self._menu_choice == 3:
                     self.sim.grid.list_grids()
@@ -647,17 +691,14 @@ class Menu(Simulation):
                     self.sim.grid.init_pop()
                     self.sim.start()
                     self.graph_data()
-                    # self.print_menu()
 
                 elif self._menu_choice == 4:
-                    # self.reset_default()
                     self._sim_status = "Default"
                     self.sim.grid._strGrid = "grid_1.txt"
                     self.sim.grid._init_pop = 2
                     self.sim._max_ticks = 100
                     self.sim._visualisation = True
                     print("Settings reset to default settings.\n")
-                    # self.print_menu()
 
                 elif self._menu_choice == 5:
                     try:
@@ -686,11 +727,12 @@ class Menu(Simulation):
             except ValueError:
                 print("\nEnter a valid menu choice between 1 and 7!")
 
-
-
-
 if __name__ == "__main__":
     # docstest
+    """To do the doctest, go to the directory where
+    the file is located, run cmd and use the command:
+    python -m doctest -v cell_sim.py
+    """
     # import doctest
     # doctest.testmod()
 
