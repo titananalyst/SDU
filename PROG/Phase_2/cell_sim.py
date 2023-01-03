@@ -24,7 +24,7 @@ os.chdir(dname)
 
 class Grid():
     def __init__(self:Grid):
-        """Create a new Grid
+        """Create a new Grid instance
         >>> grid = Grid()
         >>> grid._cols
         0
@@ -83,7 +83,7 @@ class Grid():
         """
         return self._list_patches
 
-    def list_grids(self):
+    def list_grids(self:Grid)->None:
         """Return a list of all grid files in the current directory.
         >>> grid = Grid()
         >>> grid.list_grids()
@@ -93,7 +93,7 @@ class Grid():
             if i[-4:] == '.txt':
                 self._list_grids.append(i)
 
-    def loader(self):
+    def loader(self:Grid)->None:
         """Returns a list with separated strings loaded from a chosen file
         from list_grids.
         >>> grid = Grid()
@@ -102,7 +102,7 @@ class Grid():
         """
         self._grid_data = open(self._strGrid).read().split('\n')
 
-    def checker(self):
+    def checker(self:Grid)->None:
         """Checks if the input is valid to initialize a grid
         Raises: ValueError if the input contains invalid characters
                 ValueError if the columns or rows are not euqal in size
@@ -140,7 +140,7 @@ class Grid():
         else:
             raise ValueError("There are not enough cols! Insert valid m x n grid.")
 
-    def initialize_grid(self):
+    def initialize_grid(self:Grid)->None:
         """Creates a list of BasePatches with the size of the input grid and
         returns a list of Obstacle- and CellPatches, the lists are assigned to the
         Grid object and ObstaclePatch- and CellPatch- Objects are initialized.
@@ -170,9 +170,9 @@ class Grid():
 
                 base_patches.pop(0)
 
-    def init_pop(self):
+    def init_pop(self:Grid)->None:
         """Creates new instances of Cells on a CellPatch until the maximum number
-        of initial population.
+        of initial population and appends them to the list attribute from the grid.
         >>> grid = Grid()
         >>> grid.loader()
         >>> grid.checker()
@@ -190,7 +190,23 @@ class Grid():
             self._cells.append(Cell(patch, 0))  # initialize resistance 0
             temp.remove(patch)  # remove choosen patch to avoid taking the same twice
 
-    def find_neighbours(self, curr_cell)->list: 
+    def find_neighbours(self:Grid, curr_cell:Cell)->list:
+        """ Retruns a list of neighbours from a given cell by scanning the surrounding 
+        8 patches inclusive the one current cell, as the middle one in a 3x3 grid.
+        Patches which already have a Cell and Obstacle Patches in the neighbourhood
+        will be removed and a list with free CellPatches will be returned.
+        
+        >>> grid = Grid()
+        >>> grid.loader()
+        >>> grid.checker()
+        >>> grid.initialize_grid()
+        >>> grid.init_pop()
+        >>> grid.find_neighbours()
+        Traceback (most recent call last):
+            ...
+        TypeError: find_neighbours() missing 1 required positional argument: 'curr_cell'
+        """
+        
         neighbors = []
 
         for i in range((curr_cell.patch().row()-1) , (curr_cell.patch().row() +2)):
@@ -206,7 +222,21 @@ class Grid():
                         continue
         return neighbors
 
-    def set_parent(self, curr_cell, neighbours):
+    def set_parent(self:Grid, curr_cell:Cell, neighbours:list)->Cell:
+        """Returns a new instance of a Cell (Child) if the neighbour list is not empty.
+        It checks the resistance level of the parent cell and gives the child cell a 
+        random resistance level. To do that it takes it own level and adds a random resistance
+        to it, but it also ensures, that nor a negative or a level over 9 will be created.
+
+        Furthermore the new (child) cell getts assigned to its parent and the generation counter
+        for the child cell will be incremented by 1.
+        >>> grid = Grid()
+        >>> grid.set_parent()
+        Traceback (most recent call last):
+            ...
+        TypeError: set_parent() missing 2 required positional arguments: 'curr_cell' and 'neighbours'
+        """
+
         if neighbours != []:
             new_patch = random.choice(neighbours) 
 
@@ -234,10 +264,17 @@ class Grid():
 
                 return new_cell
 
-    def reset_data(self):
+    def reset_data(self:Grid)->None:
+        """Resets the data from the grid. To ensure that no data overlaps 
+        when several different simulations after each other are created.
+        >>> grid = Grid()
+        >>> grid.reset_data()
+
+        """
         self._list_patches = []
         self._grid = []
         self._cells = []
+        self._list_grids = []
         self._grid_data = None
         self._list_patches = []
         self._list_cell_patches = []
@@ -246,6 +283,30 @@ class Grid():
 
 class Simulation(Grid):
     def __init__(self:Simulation):
+        """Create a new Simulation instance
+        >>> sim = Simulation()
+        >>> sim.grid = Grid()
+        >>> sim._max_ticks
+        100
+        >>> sim._visualisation
+        True
+        >>> sim._dictGen
+        {}
+        >>> sim._dictResults
+        {'Generation': [], 'intIndividuals': [], 'min_res': [], 'max_res': [], 'avg_res': [], 'count_gen': [], 'max_gen': []}
+        >>> sim._died_by_age
+        0
+        >>> sim._died_by_division
+        0
+        >>> sim._died_by_poisoning
+        0 
+        >>> sim._died_by_age_division
+        0
+        >>> sim._tot_cells
+        0
+        >>> sim._tot_died
+        0
+        """
         super().__init__()
         self.grid = Grid()
         self._max_ticks = 100
@@ -352,8 +413,6 @@ class Simulation(Grid):
         self._died_by_age_division = 0
         self._tot_cells = 0
         self._tot_died = 0
-        self._tot_died_by_age = 0
-        self._tot_died_by_division = 0
 
     def reset_graph(self):
         self._dictGen = {}
@@ -372,13 +431,13 @@ class Menu(Simulation):
     def __init__(self):
         super().__init__()
         self.sim = Simulation()
-        self.sim.grid.list_grids()
         self._vis_status = True
         self._sim_status = "Default"
         self._menu_choice = 1
     
     def grid_menu(self):
         self.sim.grid.reset_data()
+        self.sim.grid.list_grids()
         print("\nThe following grids are in your folder, which one do you want to use?")
         print("Type in the number of the grid:\n")
         for i in range(len(self.sim.grid._list_grids)):
@@ -401,7 +460,7 @@ class Menu(Simulation):
             else:
                 raise ValueError("\nPlease enter a number between 1 and {}. You chose {}.".format(length, choice))
         else: 
-            raise IndexError('\nThere are no grids available in the folder.')
+            raise ValueError('\nThere are no grids available in the folder.')
 
         pop_input = input('\nEnter number of init population (1-{}): '.format(self.sim.grid._intCellPatch))
         if pop_input.isdigit():
@@ -542,6 +601,7 @@ class Menu(Simulation):
 
 
                 elif self._menu_choice == 3:
+                    self.sim.grid.list_grids()
                     self.sim.grid.loader()
                     self.sim.grid.checker()
                     self.sim.grid.initialize_grid()
