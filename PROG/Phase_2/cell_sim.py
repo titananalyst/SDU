@@ -553,7 +553,7 @@ class Menu(Simulation):
             print("3: Run simulation")
             print("4: Reset to default setup")
             print("5: Visualisation ON/OFF")
-            print("6. Graphs & Statistics")
+            print("6: Graphs & Statistics")
             print("7: Quit")
             print()
             try:
