@@ -299,7 +299,7 @@ class Simulation(Grid):
         >>> sim._died_by_division
         0
         >>> sim._died_by_poisoning
-        0 
+        0
         >>> sim._died_by_age_division
         0
         >>> sim._tot_cells
@@ -329,7 +329,18 @@ class Simulation(Grid):
         self._tot_cells = 0
         self._tot_died = 0
 
-    def start(self:Simulation):
+    def start(self:Simulation)->None:
+        """Main method to start the simulation. It triggers the Visualiser, starts the statistics 
+        for the generations and runs the ticks in a while loop. 
+        The living cells on the grid, are shuffled. The cells get the command divide every tick and 
+        if everything fits, new cells are added to the grid. Also cells get checked every tick if
+        they met some conditions to die.
+        >>> sim = Simulation()
+        >>> sim.start()
+        Traceback (most recent call last):
+            ...
+        TypeError: Invalid shape (0,) for image data
+        """
         print('\nSimulation is running ...')
         self.reset_graph()  # reset data structures for the graphs
         self.reset_stats()  # reset structures for the statistics
@@ -387,8 +398,16 @@ class Simulation(Grid):
         else:
             print("Simulation finished, please continue with further processing")
 
-    def statistics(self):
-        if self._dictGen != {}:
+    def statistics(self:Simulation)->None:
+        """Print statistics for the user from the simulation.
+        Raises ValueError if there is no data for creating the statistics.
+        >>> sim = Simulation()
+        >>> sim.statistics()
+        Traceback (most recent call last):
+                ...
+        IndexError: list index out of range
+        """
+        if self._dictResults != {}:
             '''This method prints the statistics for a simulation'''
             print("Statistics")
             print(' - Duration (ticks) {:>15}'.format(self._max_ticks))
@@ -406,7 +425,10 @@ class Simulation(Grid):
         else:
             raise ValueError("\nThere is no data, run a simulation first.")
 
-    def reset_stats(self):
+    def reset_stats(self:Simulation)->None:
+        """Resets the statistics of the simulation. It is used to avoid
+        overwriting and accidentally cumulating the old statistics
+        It returns nothing, but resets the existing lists."""
         self._died_by_age = 0
         self._died_by_division = 0
         self._died_by_poisoning = 0 
@@ -415,6 +437,10 @@ class Simulation(Grid):
         self._tot_died = 0
 
     def reset_graph(self):
+        """Resets the data for the graph and the generations.
+        It is used to avoid overlapping graphs and overlapping
+        datapoints.
+        It returns nothing"""
         self._dictGen = {}
         self._dictResults = {
             "Generation": [],
@@ -449,6 +475,7 @@ class Menu(Simulation):
             if choice.isdigit():
                 choice = int(choice)
             else:
+                self.reset_default()
                 raise ValueError("Please just use integers to interact with the menue.")
 
             if choice > 0 and choice <= length:
@@ -458,32 +485,44 @@ class Menu(Simulation):
                 self.sim.grid.checker()
                 self.sim.grid.initialize_grid()
             else:
+                self.reset_default()
                 raise ValueError("\nPlease enter a number between 1 and {}. You chose {}.".format(length, choice))
-        else: 
+        else:
+            self.reset_default() 
             raise ValueError('\nThere are no grids available in the folder.')
 
         pop_input = input('\nEnter number of init population (1-{}): '.format(self.sim.grid._intCellPatch))
         if pop_input.isdigit():
             pop_input = int(pop_input)
         else:
+            self.reset_default()
             raise ValueError("Please just use integers to interact with the menue.")
 
         if pop_input > 0 and pop_input <= self.sim.grid._intCellPatch:
             self.sim.grid._init_pop = pop_input
         else:
+            self.reset_default()
             raise ValueError("Please enter a number between 1 and {}. You chose {}.".format(self.sim.grid._intCellPatch, pop_input))
 
         ticks_input = input('\nEnter tick duration for simulation (greater than 0): ')
         if ticks_input.isdigit():
             ticks_input = int(ticks_input)
         else:
+            self.reset_default()
             raise ValueError("Please just use integers to interact with the menue.")
 
         if ticks_input > 0:
             self.sim._max_ticks = ticks_input
         else:
+            self.reset_default()
             raise ValueError("\nPlease enter a duration greater than 0. You chose {}.".format(ticks_input))
         self.sim.grid.reset_data()
+
+    def reset_default(self):
+        self._sim_status = "Default"
+        self.sim.grid._init_pop = 2
+        self.sim._max_ticks = 100
+        self.sim._visualisation = True
 
     def graph_data(self):
         for i in self.sim._dictGen:
@@ -611,7 +650,9 @@ class Menu(Simulation):
                     # self.print_menu()
 
                 elif self._menu_choice == 4:
+                    # self.reset_default()
                     self._sim_status = "Default"
+                    self.sim.grid._strGrid = "grid_1.txt"
                     self.sim.grid._init_pop = 2
                     self.sim._max_ticks = 100
                     self.sim._visualisation = True
